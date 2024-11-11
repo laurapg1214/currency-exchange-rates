@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDom from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
 import getEmojiByCurrencyCode from "country-currency-emoji-flags";
 import { json, checkStatus } from './utils';
 
@@ -74,12 +74,24 @@ class ExchangeRates extends React.Component {
         error:''
       })
     })
+    .catch((error) => {
+      console.error(error);
+      return (error);
+    })
   }
-}
   
   render() {
     const { base, date, rates, error } = this.state;
-    (<ExchangeRatesTable />)
+    if (error) {
+      return (
+        <p className="text-danger">{ error }</p>
+      )
+    }
+    return (
+      <div className="container">
+        (<ExchangeRatesTable base={ base } date={ date } rates={rates} />)
+      </div>
+    )
   }
 }
   
