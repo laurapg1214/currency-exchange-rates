@@ -54,42 +54,37 @@ class ExchangeRates extends React.Component {
   
   componentDidMount() {
     fetch(`https://api.frankfurter.app/latest`)
-    .then(checkStatus)
-    .then(json)
-    .then((data) => {
-      if (!data) {
-        console.error('No data returned');
+      .then(checkStatus)
+      .then(json)
+      .then((data) => {
+        // update state based on data from the api
         this.setState({
-          error: 'No data returned',
-        });
-        return;
-      }
-      console.log(data);
-      // update state based on data from the api
-      this.setState({
-        base: data.base,
-        date: data.date,
-        rates: data.rates,
-        // reset error if successful
-        error:''
+          base: data.base,
+          date: data.date,
+          rates: data.rates,
+          // reset error if successful
+          error:''
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
-      return (error);
-    })
+      // error handling: catch block
+      // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch
+      .catch((error) => {
+        this.setState({
+          error: error.message || 'Error while fetching data'
+        });
+      });
   }
   
   render() {
     const { base, date, rates, error } = this.state;
     if (error) {
       return (
-        <p className="text-danger">{ error }</p>
+        <p className="text-danger">{error}</p>
       )
     }
     return (
       <div className="container">
-        (<ExchangeRatesTable base={ base } date={ date } rates={rates} />)
+        <ExchangeRatesTable base={base} date={date} rates={rates} />
       </div>
     )
   }
