@@ -1,6 +1,24 @@
 import React from 'react';
 import { json, checkStatus } from './utils';
 
+// add in below (transferred from ExchangeRates)
+this.handleChange = this.handleChange.bind(this);
+this.handleSubmit = this.handleSubmit.bind(this);
+}
+
+handleChange(event) {
+// update amount as user types
+this.setState({ amount: event.target.value });
+}
+
+handleSubmit(event) {
+event.preventDefault();
+let { amount } = this.state;
+amount = parseFloat(amount);
+if (!amount) {
+    return;
+};
+
 class CurrencyConverter extends React.Component {
     constructor(props) {
       super(props);

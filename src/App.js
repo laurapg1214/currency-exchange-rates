@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
-import CurrencyConverter from './CurrencyConverter';
+// import CurrencyConverter from './CurrencyConverter';
+import ExchangeRates from './ExchangeRates';
 import './App.css';
 
 const NotFound = () => {
