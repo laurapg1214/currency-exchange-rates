@@ -4,6 +4,7 @@ import getEmojiByCurrencyCode from 'country-currency-emoji-flags';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from './utils';
 
+// rendered UI - presentational component (stateless)
 const CurrencyConverterTable = (props) => {
   // props object destructuring 
   const { 
@@ -34,8 +35,9 @@ const CurrencyConverterTable = (props) => {
           {
             Object.keys(rates).map((currencyCode) => {
               /* get flag emojis
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
-              const flag = getEmojiByCurrencyCode(currencyCode);
+              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) 
+              default to globe if no flag */
+              const flag = getEmojiByCurrencyCode(currencyCode) || '🌍';
               return (
                 // key for React rendering, value as what's submitted/used when user selects
                 <option key={currencyCode} value={currencyCode}>
@@ -102,6 +104,7 @@ const CurrencyConverterTable = (props) => {
   )
 }
 
+// container component (stateful)
 class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
@@ -110,7 +113,7 @@ class CurrencyConverter extends React.Component {
       to: 'USD',
       amount: 0.0,
       convertedAmount: 0.0,
-      rates: {},
+      rates: null,
       error: '',
     };
 
@@ -135,11 +138,14 @@ class CurrencyConverter extends React.Component {
       // error handling
       .catch((error) => {
         this.setState({
-          error: error.message || 'Error while fetching data'
+          error: error.message || 'Error while fetching data',
+          // reset rates to null to avoid showing outdated data
+          rates: null
         })
       });
   }
   
+  // listener for amount input by user
   handleAmountChange(event) {
     // update amount as user types
     this.setState({ amount: parseFloat(event.target.value) });
@@ -150,43 +156,40 @@ class CurrencyConverter extends React.Component {
     // update base currency from selection
     this.setState({ from: event.target.value })
   }
-
+  // listener for target currency selected from dropdown
   handleToSelection(event) {
     // update target currency from selection
     this.setState({ to: event.target.value })
   }
 
-  // conversion function adapted from frankfurter.dev incl fetch api call
-  convert(from, to, amount) {
-    // return if no amount selected
-    if (amount === 0) {
-      alert('Please select an amount to convert');
-      return;
-    }
-
-    // api call 
-    fetch(`https://api.frankfurter.app/latest?base=${from}&symbols=${to}`)
-      .then(checkStatus)
-      .then(json)
-      .then((data) => {
-        // run conversion algorithm
-        const convertedAmount = (amount * data.rates[to]).toFixed(2);
-        // update convertedAmount state using shorthand (object key & variable name identical)
-        this.setState({ convertedAmount });
-      })
-      .catch((error) => {
-        this.setState({
-          error: error.message || 'Error while fetching data'
-        })
-      });
-  }
-  
+  // submit event handler
   handleSubmit(event) {
     event.preventDefault();
     let { from, to, amount } = this.state;
     this.convert(from, to, amount);
   }
-    
+
+  // conversion function adapted from frankfurter.dev 
+  convert(from, to, amount) {
+    // return if no amount selected
+    if (amount <= 0) {
+      alert('Please select an amount greater than 0 to convert');
+      return;
+    }
+
+    // return if rates unavailable
+    if (!this.state.rates || !this.state.rates[from] || !this.state.rates[to]) {
+      alert('Rates not available.');
+      return;
+    }
+
+    // convert using values of currency codes stored in from and to
+    const conversionRate = this.state.rates[to] / this.state.rates[from]
+    const convertedAmount = (amount * conversionRate).toFixed(2);
+
+    // update convertedAmount state using shorthand (object key & variable name identical)
+    this.setState({ convertedAmount });
+  }
   
   render() {
     const { from, to, amount, convertedAmount, rates, error } = this.state;
