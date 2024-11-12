@@ -130,13 +130,13 @@ export class CurrencyConverter extends React.Component {
 
   componentDidMount() {
     // fetch current rates for dropdown lists
-    fetch(`https://api.frankfurter.app/latest?base=EUR`)
+    fetch(`https://api.frankfurter.app/latest`)
       .then(checkStatus)
       .then(json)
       .then((data) => {
         // update state based on data from api
         this.setState({
-          rates: data.rates
+          rates: data.rates,
         });
       })
       // error handling
@@ -197,6 +197,8 @@ export class CurrencyConverter extends React.Component {
   
   render() {
     const { from, to, amount, convertedAmount, rates, error } = this.state;
+    console.log("Rendering with from:", from);
+
     // if error, render error message in DOM
     if (error) {
       return (
@@ -217,10 +219,7 @@ export class CurrencyConverter extends React.Component {
     )
   }
 }
-  
-const container = document.getElementById('root');
-const root = ReactDOM.createRoot(container);
-root.render(<CurrencyConverter />);
+
   
   
   
