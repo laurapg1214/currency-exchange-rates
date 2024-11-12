@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import getEmojiByCurrencyCode from 'country-currency-emoji-flags';
+import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from './utils';
 
@@ -17,6 +17,10 @@ const CurrencyConverterTable = (props) => {
     handleFromSelection,
     handleToSelection
   } = props;
+
+  if (!rates) {
+    return <p>Loading rates...</p>
+  }
 
   // return Currency Converter table
   return (
@@ -105,7 +109,7 @@ const CurrencyConverterTable = (props) => {
 }
 
 // container component (stateful)
-class CurrencyConverter extends React.Component {
+export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -214,9 +218,9 @@ class CurrencyConverter extends React.Component {
   }
 }
   
-  const container = document.getElementById('root');
-  const root = ReactDOM.createRoot(container);
-  root.render(<CurrencyConverter />);
+const container = document.getElementById('root');
+const root = ReactDOM.createRoot(container);
+root.render(<CurrencyConverter />);
   
   
   

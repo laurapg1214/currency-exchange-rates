@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import getEmojiByCurrencyCode from 'country-currency-emoji-flags';
+import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import { json, checkStatus } from './utils';
 
 // rendered UI - presentational component (stateless)
@@ -10,7 +10,7 @@ const ExchangeRatesTable = (props) => {
 
   // check rates object exists
   if (!rates) {
-    return <p>No rates data available.</p>;
+    return <p>Loading rates...</p>;
   }
   
   // return Exchange Rates table
@@ -52,7 +52,7 @@ const ExchangeRatesTable = (props) => {
 }
 
 // container component (stateful)
-class ExchangeRates extends React.Component {
+export class ExchangeRates extends React.Component {
   // object constructor
   constructor(props) {
     super(props);
@@ -129,9 +129,9 @@ class ExchangeRates extends React.Component {
   }
 }
   
-  const container = document.getElementById('root');
-  const root = ReactDOM.createRoot(container);
-  root.render(<ExchangeRates />);
+const container = document.getElementById('root');
+const root = ReactDOM.createRoot(container);
+root.render(<ExchangeRates />);
   
   
   
