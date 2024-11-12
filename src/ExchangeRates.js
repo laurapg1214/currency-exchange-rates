@@ -1,12 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import { json, checkStatus } from './utils';
 
 // rendered UI - presentational component (stateless)
 const ExchangeRatesTable = (props) => {
   // object destructuring: pull properties out of props object returned by api call
-  const { base, date, rates } = props;
+  const { base, date, rates, handleBaseRateSelect } = props;
 
   // check rates object exists
   if (!rates) {
@@ -18,7 +17,32 @@ const ExchangeRatesTable = (props) => {
     <div className="container">
       <h3>Exchange Rates</h3>
       <h4>as of {date}</h4>
-      <h4>Base currency: {base}</h4>
+
+      {/* base rate select dropdown */}
+      <div className="form-group">
+        <label htmlFor="base-rate" className="form-label">Base Rate</label>
+        <select 
+          id="baseRate" 
+          className="form-select" 
+          value={base}
+          onChange={handleBaseRateSelect}
+        >
+          {
+            Object.keys(rates).map((currencyCode) => {
+              /* get flag emojis
+              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
+              const flag = getEmojiByCurrencyCode(currencyCode);
+              return (
+                <option key={currencyCode} value={currencyCode}>
+                  {/* render flag emoji with currency code */}
+                  {flag} {currencyCode}
+                </option>
+              );
+            })
+          }
+        </select>
+      </div>
+
       {/* exchange rates table */}
       <table className='table'>
         <thead>
