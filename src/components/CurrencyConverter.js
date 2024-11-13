@@ -1,8 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { useState } from 'react';
 import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { json, checkStatus } from './utils';
+import { json, checkStatus } from '../utils';
 
 // rendered UI - presentational component (stateless)
 const CurrencyConverterTable = (props) => {
@@ -29,21 +28,19 @@ const CurrencyConverterTable = (props) => {
 
       {/* base currency dropdown */}
       <div className="form-group">
-        <label htmlFor="baseCurrency" className="form-label">Base Currency</label>
+        <label htmlFor="target-currency" className="form-label">Base Currency</label>
         <select 
           id="baseCurrency" 
           className="form-select" 
-          value={from}
+          value={to}
           onChange={handleFromSelection}
         >
           {
             Object.keys(rates).map((currencyCode) => {
               /* get flag emojis
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) 
-              default to globe if no flag */
-              const flag = getEmojiByCurrencyCode(currencyCode) || '🌍';
+              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
+              const flag = getEmojiByCurrencyCode(currencyCode);
               return (
-                // key for React rendering, value as what's submitted/used when user selects
                 <option key={currencyCode} value={currencyCode}>
                   {/* render flag emoji with currency code */}
                   {flag} {currencyCode}
@@ -160,6 +157,7 @@ export class CurrencyConverter extends React.Component {
     // update base currency from selection
     this.setState({ from: event.target.value })
   }
+
   // listener for target currency selected from dropdown
   handleToSelection(event) {
     // update target currency from selection
@@ -197,7 +195,6 @@ export class CurrencyConverter extends React.Component {
   
   render() {
     const { from, to, amount, convertedAmount, rates, error } = this.state;
-    console.log("Rendering with from:", from);
 
     // if error, render error message in DOM
     if (error) {

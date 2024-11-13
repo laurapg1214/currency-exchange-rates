@@ -1,16 +1,32 @@
 import React from 'react';
+import Select from 'react-select';
 import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
-import { json, checkStatus } from './utils';
+import { json, checkStatus } from '../utils';
 
 // rendered UI - presentational component (stateless)
 const ExchangeRatesTable = (props) => {
   // object destructuring: pull properties out of props object returned by api call
   const { base, date, rates, handleBaseRateSelect } = props;
+  console.log(rates);
 
   // check rates object exists
   if (!rates) {
     return <p>Loading rates...</p>;
   }
+
+  // create currencies array
+  // use of images with react-select adapted from https://stackoverflow.com/questions/45940726/populate-react-select-with-image
+  const currencies = Object.keys(rates).map((currencyCode) => {
+    return {
+      value: currencyCode.toLowerCase(),
+      label: currencyCode,
+      image: `/flags/square-flags/${currencyCode.toLowerCase()}.svg`
+    };
+  });
+
+  // create default base value for dropdown
+  const defaultBase = currencies.find(currency => currency.label === base.toLowerCase());
+  console.log(defaultBase);
   
   // return Exchange Rates table
   return (
@@ -19,28 +35,25 @@ const ExchangeRatesTable = (props) => {
       <h4>as of {date}</h4>
 
       {/* base rate select dropdown */}
-      <div className="form-group">
+      <div>
         <label htmlFor="base-rate" className="form-label">Base Rate</label>
-        <select 
-          id="baseRate" 
-          className="form-select" 
-          value={base}
+        <Select
+          // match current currency selection
+          value={defaultBase} 
+          // pass array of currency objects
+          options={currencies}
           onChange={handleBaseRateSelect}
-        >
-          {
-            Object.keys(rates).map((currencyCode) => {
-              /* get flag emojis
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
-              const flag = getEmojiByCurrencyCode(currencyCode);
-              return (
-                <option key={currencyCode} value={currencyCode}>
-                  {/* render flag emoji with currency code */}
-                  {flag} {currencyCode}
-                </option>
-              );
-            })
-          }
-        </select>
+          getOptionLabel={(currency) => (
+            <div className="currency-option">
+              <img 
+                src={currency.image} 
+                alt={`${currency.label} flag`} 
+                style={{ width: 16, marginRight: 8 }}
+              />
+              <span>{currency.label}</span>
+            </div>
+          )}
+        /> 
       </div>
 
       {/* exchange rates table */}
@@ -56,14 +69,21 @@ const ExchangeRatesTable = (props) => {
             /* loop through rates object to create rows */
             Object.keys(rates).map((currencyCode) => {
               /* get flag emojis 
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) 
-              default to globe if no flag */
-              const flag = getEmojiByCurrencyCode(currencyCode) || '🌍';
+              (from https://www.npmjs.com/package/currency-flags) */
               const rate = rates[currencyCode]
+              const flagSrc = `/flags/square-flags/${currencyCode.toLowerCase()}.svg`; 
+
               return (
                 <tr key={ currencyCode }>
-                  <td>{ flag }</td>
-                  <td>{ currencyCode }</td>
+                  <td>
+                    <img 
+                      alt={`${currencyCode} flag`}
+                      src={flagSrc}
+                      className={`currency-flag currency-flag-${currencyCode}`} 
+                      style={{ width: 16, marginRight: 8 }}
+                      />
+                      { currencyCode }
+                  </td>
                   <td>{ rate }</td>
                 </tr>
               );
@@ -81,7 +101,7 @@ export class ExchangeRates extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      base: 'EUR',
+      base: '',
       date: '',
       rates: null,
       baseURL: `https://api.frankfurter.app/latest`,
@@ -123,12 +143,13 @@ export class ExchangeRates extends React.Component {
   }
 
   // listener for base rate selection
-  handleBaseRateSelect(event) {
+  // selectedOption passed in instead of event bc using React Select
+  handleBaseRateSelect(selectedOption) {
     // update base currency & baseURL from selection
     this.setState(
       { 
-        base: event.target.value,
-        baseURL: `https://api.frankfurter.app/latest?base=${event.target.value}`
+        base: selectedOption.value,
+        baseURL: `https://api.frankfurter.app/latest?base=${selectedOption.value}`
       }, 
       // apiCall passed as callback function
       this.apiCall
@@ -147,7 +168,12 @@ export class ExchangeRates extends React.Component {
     // call child component ExchangeRatesTable for rendering in DOM
     return (
       <div className="container">
-        <ExchangeRatesTable base={base} date={date} rates={rates} />
+        <ExchangeRatesTable 
+          base={base} 
+          date={date} 
+          rates={rates} 
+          handleBaseRateSelect={this.handleBaseRateSelect}
+        />
       </div>
     )
   }
