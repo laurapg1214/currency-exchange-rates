@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import Select from 'react-select';
 import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from '../utils';
+import { generateCurrencies } from './Currencies';
 
 // rendered UI - presentational component (stateless)
 const CurrencyConverterTable = (props) => {
@@ -21,62 +23,61 @@ const CurrencyConverterTable = (props) => {
     return <p>Loading rates...</p>
   }
 
+  // generate currencies array
+  const currencies = generateCurrencies(rates);
+
   // return Currency Converter table
   return (
-    <div className="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <div className="currency-selection">
       <h3 className="text-center mb-4">Currency Converter</h3>
-
+  
       {/* base currency dropdown */}
-      <div className="form-group">
-        <label htmlFor="target-currency" className="form-label">Base Currency</label>
-        <select 
-          id="baseCurrency" 
-          className="form-select" 
-          value={to}
-          onChange={handleFromSelection}
-        >
-          {
-            Object.keys(rates).map((currencyCode) => {
-              /* get flag emojis
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
-              const flag = getEmojiByCurrencyCode(currencyCode);
-              return (
-                <option key={currencyCode} value={currencyCode}>
-                  {/* render flag emoji with currency code */}
-                  {flag} {currencyCode}
-                </option>
-              );
-            })
-          }
-        </select>
-      </div>
+      <div className="dropdown-container">
+        <div className="form-group">
+          <label htmlFor="base-currency" className="form-label">From</label>
+          <Select
+            // match current currency selection
+            value={from} 
+            // pass array of currency objects
+            options={currencies}
+            onChange={handleFromSelection}
+            getOptionLabel={(currency) => (
+              <div className="currency-option">
+                <img 
+                  src={currency.image} 
+                  alt={`${currency.label} flag`} 
+                  style={{ width: 16, marginRight: 8 }}
+                />
+                <span>{currency.label}</span>
+              </div>
+            )}
+          /> 
+        </div>
 
-      {/* double arrow between currencies from https://www.w3schools.com/charsets/ref_utf_arrows.asp */}
-      <span className="arrow">&#8596;</span>
+        {/* double arrow between currencies from https://www.w3schools.com/charsets/ref_utf_arrows.asp */}
+        <span className="arrow">&#8596;</span>
 
-      {/* target currency dropdown */}
-      <div className="form-group">
-        <label htmlFor="target-currency" className="form-label">Target Currency</label>
-        <select 
-          id="targetCurrency" 
-          className="form-select" 
-          value={to}
-          onChange={handleToSelection}
-        >
-          {
-            Object.keys(rates).map((currencyCode) => {
-              /* get flag emojis
-              (from https://snyk.io/advisor/npm-package/country-currency-emoji-flags) */
-              const flag = getEmojiByCurrencyCode(currencyCode);
-              return (
-                <option key={currencyCode} value={currencyCode}>
-                  {/* render flag emoji with currency code */}
-                  {flag} {currencyCode}
-                </option>
-              );
-            })
-          }
-        </select>
+        {/* target currency dropdown */}
+        <div className="form-group">
+          <label htmlFor="target-currency" className="form-label">To</label>
+          <Select
+            // match current currency selection
+            value={to} 
+            // pass array of currency objects
+            options={currencies}
+            onChange={handleToSelection}
+            getOptionLabel={(currency) => (
+              <div className="currency-option">
+                <img 
+                  src={currency.image} 
+                  alt={`${currency.label} flag`} 
+                  style={{ width: 16, marginRight: 8 }}
+                />
+                <span>{currency.label}</span>
+              </div>
+            )}
+          /> 
+        </div>
       </div>
 
       {/* amount input & converted amount fields */}

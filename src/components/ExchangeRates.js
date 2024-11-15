@@ -2,6 +2,7 @@ import React from 'react';
 import Select from 'react-select';
 import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import { json, checkStatus } from '../utils';
+import { generateCurrencies } from './Currencies';
 
 // rendered UI - presentational component (stateless)
 const ExchangeRatesTable = (props) => {
@@ -14,15 +15,8 @@ const ExchangeRatesTable = (props) => {
     return <p>Loading rates...</p>;
   }
 
-  // create currencies array
-  // use of images with react-select adapted from https://stackoverflow.com/questions/45940726/populate-react-select-with-image
-  const currencies = Object.keys(rates).map((currencyCode) => {
-    return {
-      value: currencyCode.toLowerCase(),
-      label: currencyCode,
-      image: `/flags/square-flags/${currencyCode.toLowerCase()}.svg`
-    };
-  });
+  // generate currencies array
+  const currencies = generateCurrencies(rates);
 
   // create default base value for dropdown
   const defaultBase = currencies.find(currency => currency.label === base.toLowerCase());

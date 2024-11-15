@@ -12,3 +12,101 @@ code {
     monospace;
 }
 
+/* centered layout for containers */
+.container {
+  max-width: 1000px;
+  margin-top: 50px;
+  padding: 20px;
+  border-radius: 10px;
+  /* light background for readability */
+  background-color: #f9f9f9; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+/* header styling for titles of components */
+h3, h4 {
+  font-weight: 600;
+  text-align: center;
+}
+
+/* styling for input and select field  */
+.form-select,
+.form-control {
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 5px;
+}
+
+/* styling for title & from/to currencies in CurrencyConverter.js */
+.currency-selection h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px; 
+  width: 100%;
+}
+
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60%;
+}
+
+.currency-selection .form-label {
+  margin-right: 8px;
+  align-items: center;
+}
+
+.arrow {
+  margin: 0 10px;
+  font-size: 24px;
+}
+
+.currency-selection .react-select {
+  width: 150px; 
+}
+
+/* styling for select options in ExchangeRates.js */
+.currency-option {
+  display: flex;
+  align-items: center;
+}
+
+/* table styling for ExchangeRates.js */
+.table {
+  margin-top: 20px;
+}
+
+.table thead th {
+  font-weight: bold;
+  color: #444;
+}
+
+.currency-flag {
+  width: 20px;
+  height: 15px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* styling for error messages */
+.text-danger {
+  font-weight: 500;
+  color: #dc3545;
+  text-align: center;
+}
+
+/* styling for converted amount */
+#convertedAmount {
+  font-weight: bold;
+  /* emphasis color */
+  color: #2d9cdb; 
+  background-color: #e8f5fd;
+  padding: 0.5rem;
+  border-radius: 5px;
+  max-width: 300px;
+  margin: 10px auto;
+}
+
+
