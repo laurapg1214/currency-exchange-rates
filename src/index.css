@@ -99,6 +99,7 @@ h3, h4 {
 
 /* styling for converted amount */
 #convertedAmount {
+  display: none;
   font-weight: bold;
   /* emphasis color */
   color: #2d9cdb; 

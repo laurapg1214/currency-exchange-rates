@@ -15,7 +15,7 @@ export class CurrencyConverter extends React.Component {
     this.state = {
       base: 'EUR',
       target: 'JPY',
-      amount: 0.0,
+      amount: 1.0,
       convertedAmount: 0.0,
       rates: null,
       error: '',
@@ -86,7 +86,7 @@ export class CurrencyConverter extends React.Component {
     }
 
     // return if rates unavailable
-    if (!this.state.rates || !this.state.rates[base] || !this.state.rates[target]) {
+    if (!this.state.rates || !this.state.base || !this.state.target) {
       alert('Rates not available.');
       return;
     }
@@ -97,6 +97,9 @@ export class CurrencyConverter extends React.Component {
 
     // update convertedAmount state using shorthand (object key & variable name identical)
     this.setState({ convertedAmount });
+    
+    // if convertedAmount div hidden, change to show
+    document.getElementById('convertedAmount').style.display = 'block';
   }
 
   componentDidMount() {
@@ -200,12 +203,20 @@ export class CurrencyConverter extends React.Component {
               value={amount} 
               onChange={this.handleAmountChange}
             />
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              onClick={this.handleSubmit}
+            >
+              Convert
+            </button>
           </div>
-          <div>
+
+          {/* converted amount appears following submit */}
+          <div id="convertedAmount">
             <label htmlFor="convertedAmount">Converted Amount</label>
             <input 
               type="text" 
-              id="convertedAmount" 
               value={convertedAmount} 
               readOnly
             />
