@@ -1,27 +1,36 @@
 import React, { useState } from 'react';
 import Select from 'react-select';
-import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from '../utils';
-import { generateCurrencies } from './Currencies';
+import { 
+  generateDefaultBase, 
+  generateDefaultTarget, 
+  generateCurrencies 
+} from './Currencies';
 
 // rendered UI - presentational component (stateless)
 const CurrencyConverterTable = (props) => {
   // props object destructuring 
   const { 
-    from, 
-    to, 
+    base, 
+    target, 
     amount, 
     convertedAmount, 
     rates,
     handleAmountChange,
-    handleFromSelection,
-    handleToSelection
+    handleBaseSelection,
+    handleTargetSelection
   } = props;
 
   if (!rates) {
     return <p>Loading rates...</p>
   }
+
+  // generate default base object
+  const defaultBase = generateDefaultBase(base);
+
+  // generate default target object
+  const defaultTarget = generateDefaultTarget(target);
 
   // generate currencies array
   const currencies = generateCurrencies(rates);
@@ -36,11 +45,11 @@ const CurrencyConverterTable = (props) => {
         <div className="form-group">
           <label htmlFor="base-currency" className="form-label">From</label>
           <Select
-            // match current currency selection
-            value={from} 
+            // show base currency selection
+            value={defaultBase}
             // pass array of currency objects
             options={currencies}
-            onChange={handleFromSelection}
+            onChange={handleBaseSelection}
             getOptionLabel={(currency) => (
               <div className="currency-option">
                 <img 
@@ -62,10 +71,10 @@ const CurrencyConverterTable = (props) => {
           <label htmlFor="target-currency" className="form-label">To</label>
           <Select
             // match current currency selection
-            value={to} 
+            value={target} 
             // pass array of currency objects
             options={currencies}
-            onChange={handleToSelection}
+            onChange={handleTargetSelection}
             getOptionLabel={(currency) => (
               <div className="currency-option">
                 <img 
@@ -111,8 +120,9 @@ export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      from: 'EUR',
-      to: 'USD',
+      base: 'EUR',
+      defaultBase: null,
+      target: 'USD',
       amount: 0.0,
       convertedAmount: 0.0,
       rates: null,
@@ -120,15 +130,15 @@ export class CurrencyConverter extends React.Component {
     };
 
     this.handleAmountChange = this.handleAmountChange.bind(this);
-    this.handleFromSelection = this.handleFromSelection.bind(this);
-    this.handleToSelection = this.handleToSelection.bind(this);
+    this.handleBaseSelection = this.handleBaseSelection.bind(this);
+    this.handleTargetSelection = this.handleTargetSelection.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
   }
 
-  componentDidMount() {
-    // fetch current rates for dropdown lists
-    fetch(`https://api.frankfurter.app/latest`)
+  // fetch rates with current base
+  fetchRates(base) {
+    fetch(`https://api.frankfurter.app/latest?base=${base}`)
       .then(checkStatus)
       .then(json)
       .then((data) => {
@@ -154,26 +164,29 @@ export class CurrencyConverter extends React.Component {
   }
 
   // listener for base currency selected from dropdown
-  handleFromSelection(event) {
+  handleBaseSelection(selectedOption) {
+    console.log("handling base selection");
     // update base currency from selection
-    this.setState({ from: event.target.value })
+    this.setState({ base: selectedOption.value })
+    // fetch rates with new base
+    this.fetchRates(this.state.base)
   }
 
   // listener for target currency selected from dropdown
-  handleToSelection(event) {
+  handleTargetSelection(event) {
     // update target currency from selection
-    this.setState({ to: event.target.value })
+    this.setState({ target: event.target.value })
   }
 
   // submit event handler
   handleSubmit(event) {
     event.preventDefault();
-    let { from, to, amount } = this.state;
-    this.convert(from, to, amount);
+    let { base, target, amount } = this.state;
+    this.convert(base, target, amount);
   }
 
   // conversion function adapted from frankfurter.dev 
-  convert(from, to, amount) {
+  convert(base, target, amount) {
     // return if no amount selected
     if (amount <= 0) {
       alert('Please select an amount greater than 0 to convert');
@@ -181,21 +194,26 @@ export class CurrencyConverter extends React.Component {
     }
 
     // return if rates unavailable
-    if (!this.state.rates || !this.state.rates[from] || !this.state.rates[to]) {
+    if (!this.state.rates || !this.state.rates[base] || !this.state.rates[target]) {
       alert('Rates not available.');
       return;
     }
 
     // convert using values of currency codes stored in from and to
-    const conversionRate = this.state.rates[to] / this.state.rates[from]
+    const conversionRate = this.state.rates[target] / this.state.rates[base]
     const convertedAmount = (amount * conversionRate).toFixed(2);
 
     // update convertedAmount state using shorthand (object key & variable name identical)
     this.setState({ convertedAmount });
   }
+
+  componentDidMount() {
+    // fetch current rates for dropdown lists
+    this.fetchRates(this.state.base);
+  }
   
   render() {
-    const { from, to, amount, convertedAmount, rates, error } = this.state;
+    const { base, target, amount, convertedAmount, rates, error } = this.state;
 
     // if error, render error message in DOM
     if (error) {
@@ -207,8 +225,8 @@ export class CurrencyConverter extends React.Component {
     return (
       <div className="container">
         <CurrencyConverterTable 
-          from={from} 
-          to={to} 
+          base={base} 
+          target={target} 
           amount={amount}
           convertedAmount={convertedAmount}
           rates={rates} 
