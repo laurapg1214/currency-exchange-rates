@@ -1,12 +1,25 @@
+// generate flag image path
+const getFlagPath = (code) => {
+  // fallback image to handle no flag image
+  if (code === 'ISK') {
+    return '/flags/icons8-flag-24.png';
+  }
+  // dynamic path to flag images
+  return `/flags/square-flags/${code.toLowerCase()}.svg`;
+}
+
 // generate base object for default base currency in dropdown
 export const generateDefaultBase = (base) => {
+  // error handling
   if (!base) {
     return;
   }
+
+  // return base currency object
   return {
     value: base.toLowerCase(),
     label: base,
-    image: `/flags/square-flags/${base.toLowerCase()}.svg`
+    image: getFlagPath(base)
   };
 }
 
@@ -18,7 +31,7 @@ export const generateDefaultTarget = (target) => {
   return {
     value: target.toLowerCase(),
     label: target,
-    image: `/flags/square-flags/${target.toLowerCase()}.svg`
+    image: getFlagPath(target)
   };
 }
 
@@ -30,10 +43,12 @@ export const generateCurrencies = (rates) => {
     return;
   }
   return Object.keys(rates).map((currencyCode) => {
-      return {
+    // assign flag path var to handle no flag image
+    
+    return {
       value: currencyCode.toLowerCase(),
       label: currencyCode,
-      image: `/flags/square-flags/${currencyCode.toLowerCase()}.svg`
-      };
+      image: getFlagPath(currencyCode)
+    };
   });
 }

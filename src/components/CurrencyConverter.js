@@ -14,7 +14,7 @@ export class CurrencyConverter extends React.Component {
     super(props);
     this.state = {
       base: 'EUR',
-      target: 'USD',
+      target: 'JPY',
       amount: 0.0,
       convertedAmount: 0.0,
       rates: null,

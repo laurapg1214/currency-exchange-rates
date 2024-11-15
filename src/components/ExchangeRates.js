@@ -1,6 +1,5 @@
 import React from 'react';
 import Select from 'react-select';
-import { getEmojiByCurrencyCode } from 'country-currency-emoji-flags';
 import { json, checkStatus } from '../utils';
 import { generateCurrencies } from './Currencies';
 
