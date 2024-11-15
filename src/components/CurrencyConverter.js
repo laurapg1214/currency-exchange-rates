@@ -79,24 +79,13 @@ export class CurrencyConverter extends React.Component {
 
   // conversion function adapted from frankfurter.dev 
   convert(base, target, amount) {
-    // return if no amount selected
-    if (amount <= 0) {
-      alert('Please select an amount greater than 0 to convert');
-      return;
-    }
-
-    // return if rates unavailable
-    if (!this.state.rates || !this.state.base || !this.state.target) {
-      alert('Rates not available.');
-      return;
-    }
-
-    // convert using values of currency codes stored in from and to
-    const conversionRate = this.state.rates[target] / this.state.rates[base]
-    const convertedAmount = (amount * conversionRate).toFixed(2);
-
-    // update convertedAmount state using shorthand (object key & variable name identical)
-    this.setState({ convertedAmount });
+    fetch(`https://api.frankfurter.app/latest?base=${base}&symbols=${target}`)
+      .then((resp) => resp.json())
+      .then((data) => {
+        this.setState ({
+          convertedAmount: (amount * data.rates[target]).toFixed(2)
+        }) 
+      });
     
     // if convertedAmount div hidden, change to show
     document.getElementById('convertedAmount').style.display = 'block';
@@ -202,6 +191,13 @@ export class CurrencyConverter extends React.Component {
               className="form-control" 
               value={amount} 
               onChange={this.handleAmountChange}
+              // from https://www.geeksforgeeks.org/react-onkeydown-event/
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  this.handleSubmit(event);
+                }
+              }}
             />
             <button 
               type="submit" 
