@@ -8,120 +8,12 @@ import {
   generateCurrencies 
 } from './Currencies';
 
-// rendered UI - presentational component (stateless)
-const CurrencyConverterTable = (props) => {
-  // props object destructuring 
-  const { 
-    base, 
-    target, 
-    amount, 
-    convertedAmount, 
-    rates,
-    handleAmountChange,
-    handleBaseSelection,
-    handleTargetSelection
-  } = props;
-
-  if (!rates) {
-    return <p>Loading rates...</p>
-  }
-
-  // generate default base object
-  const defaultBase = generateDefaultBase(base);
-
-  // generate default target object
-  const defaultTarget = generateDefaultTarget(target);
-
-  // generate currencies array
-  const currencies = generateCurrencies(rates);
-
-  // return Currency Converter table
-  return (
-    <div className="currency-selection">
-      <h3 className="text-center mb-4">Currency Converter</h3>
-  
-      {/* base currency dropdown */}
-      <div className="dropdown-container">
-        <div className="form-group">
-          <label htmlFor="base-currency" className="form-label">From</label>
-          <Select
-            // show base currency selection
-            value={defaultBase}
-            // pass array of currency objects
-            options={currencies}
-            onChange={handleBaseSelection}
-            getOptionLabel={(currency) => (
-              <div className="currency-option">
-                <img 
-                  src={currency.image} 
-                  alt={`${currency.label} flag`} 
-                  style={{ width: 16, marginRight: 8 }}
-                />
-                <span>{currency.label}</span>
-              </div>
-            )}
-          /> 
-        </div>
-
-        {/* double arrow between currencies from https://www.w3schools.com/charsets/ref_utf_arrows.asp */}
-        <span className="arrow">&#8596;</span>
-
-        {/* target currency dropdown */}
-        <div className="form-group">
-          <label htmlFor="target-currency" className="form-label">To</label>
-          <Select
-            // match current currency selection
-            value={target} 
-            // pass array of currency objects
-            options={currencies}
-            onChange={handleTargetSelection}
-            getOptionLabel={(currency) => (
-              <div className="currency-option">
-                <img 
-                  src={currency.image} 
-                  alt={`${currency.label} flag`} 
-                  style={{ width: 16, marginRight: 8 }}
-                />
-                <span>{currency.label}</span>
-              </div>
-            )}
-          /> 
-        </div>
-      </div>
-
-      {/* amount input & converted amount fields */}
-      <div className="amount-container mt-4">
-        <div className="form-group">
-          <label htmlFor="amount" className="form-label">Amount</label>
-          <input 
-            type="number" 
-            id="amount" 
-            className="form-control" 
-            value={amount} 
-            onChange={handleAmountChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="convertedAmount">Converted Amount</label>
-          <input 
-            type="text" 
-            id="convertedAmount" 
-            value={convertedAmount} 
-            readOnly
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // container component (stateful)
 export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       base: 'EUR',
-      defaultBase: null,
       target: 'USD',
       amount: 0.0,
       convertedAmount: 0.0,
@@ -167,15 +59,15 @@ export class CurrencyConverter extends React.Component {
   handleBaseSelection(selectedOption) {
     console.log("handling base selection");
     // update base currency from selection
-    this.setState({ base: selectedOption.value })
+    this.setState({ base: selectedOption.label })
     // fetch rates with new base
     this.fetchRates(this.state.base)
   }
 
   // listener for target currency selected from dropdown
-  handleTargetSelection(event) {
+  handleTargetSelection(selectedOption) {
     // update target currency from selection
-    this.setState({ target: event.target.value })
+    this.setState({ target: selectedOption.label })
   }
 
   // submit event handler
@@ -210,10 +102,22 @@ export class CurrencyConverter extends React.Component {
   componentDidMount() {
     // fetch current rates for dropdown lists
     this.fetchRates(this.state.base);
+
+    // placeholder while rates loading
+    if (!this.state.rates) {
+      return <p>Loading rates...</p>
+    }
   }
   
   render() {
-    const { base, target, amount, convertedAmount, rates, error } = this.state;
+    const { 
+      base, 
+      target, 
+      amount, 
+      convertedAmount, 
+      rates, 
+      error 
+    } = this.state;
 
     // if error, render error message in DOM
     if (error) {
@@ -221,16 +125,92 @@ export class CurrencyConverter extends React.Component {
         <p className="text-danger">{error}</p>
       )
     }
-    // call child component CurrencyConverterTable for rendering in DOM
+
+    // generate default base object
+    const defaultBase = generateDefaultBase(base);
+
+    // generate default target object
+    const defaultTarget = generateDefaultTarget(target);
+
+    // generate currencies array
+    const currencies = generateCurrencies(rates);
+
+    // return Currency Converter table
     return (
-      <div className="container">
-        <CurrencyConverterTable 
-          base={base} 
-          target={target} 
-          amount={amount}
-          convertedAmount={convertedAmount}
-          rates={rates} 
-        />
+      <div className="currency-selection">
+        <h3 className="text-center mb-4">Currency Converter</h3>
+    
+        {/* base currency dropdown */}
+        <div className="dropdown-container">
+          <div className="form-group">
+            <label htmlFor="base-currency" className="form-label">From</label>
+            <Select
+              // show base currency selection
+              value={defaultBase}
+              // pass array of currency objects
+              options={currencies}
+              onChange={this.handleBaseSelection}
+              getOptionLabel={(currency) => (
+                <div className="currency-option">
+                  <img 
+                    src={currency.image} 
+                    alt={`${currency.label} flag`} 
+                    style={{ width: 16, marginRight: 8 }}
+                  />
+                  <span>{currency.label}</span>
+                </div>
+              )}
+            /> 
+          </div>
+
+          {/* double arrow between currencies from https://www.w3schools.com/charsets/ref_utf_arrows.asp */}
+          <span className="arrow">&#8596;</span>
+
+          {/* target currency dropdown */}
+          <div className="form-group">
+            <label htmlFor="target-currency" className="form-label">To</label>
+            <Select
+              // match current currency selection
+              value={defaultTarget} 
+              // pass array of currency objects
+              options={currencies}
+              onChange={this.handleTargetSelection}
+              getOptionLabel={(currency) => (
+                <div className="currency-option">
+                  <img 
+                    src={currency.image} 
+                    alt={`${currency.label} flag`} 
+                    style={{ width: 16, marginRight: 8 }}
+                  />
+                  <span>{currency.label}</span>
+                </div>
+              )}
+            /> 
+          </div>
+        </div>
+
+        {/* amount input & converted amount fields */}
+        <div className="amount-container mt-4">
+          <div className="form-group">
+            <label htmlFor="amount" className="form-label">Amount</label>
+            <input 
+              type="number" 
+              id="amount" 
+              className="form-control" 
+              value={amount} 
+              onChange={this.handleAmountChange}
+            />
+          </div>
+          <div>
+            <label htmlFor="convertedAmount">Converted Amount</label>
+            <input 
+              type="text" 
+              id="convertedAmount" 
+              value={convertedAmount} 
+              readOnly
+            />
+          </div>
+        </div>
       </div>
     )
   }
