@@ -2,6 +2,7 @@
   "name": "react-app-currency-exchange-rates",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -9,6 +10,7 @@
     "bootstrap": "^5.3.3",
     "country-currency-emoji-flags": "^1.1.1",
     "currency-flags": "^4.0.7",
+    "currency-to-locale": "^1.1.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^5.3.4",

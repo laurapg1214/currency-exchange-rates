@@ -1,99 +1,156 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Select from 'react-select';
+import currencyToLocale from 'currency-to-locale'; // my package on npm
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { json, checkStatus } from '../utils';
+import { json, checkStatus } from '../utils.js';
 import { 
   generateDefaultBase, 
   generateDefaultTarget, 
   generateCurrencies 
-} from './Currencies';
+} from './Currencies.js';
 
-// container component (stateful)
+// container component 
 export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      base: 'EUR',
-      target: 'JPY',
+      from: 'GBP',
+      to: 'USD',
       amount: 1.0,
-      convertedAmount: 0.0,
+      fromAmount: null,
+      fromAmtFormatted: '£1.00',
+      fromAmtLabel: 'From Amount',
+      toAmount: null,
+      toAmtFormatted: '',
+      toAmtLabel: 'To Amount',
       rates: null,
       error: '',
     };
 
+    this.fetchRates = this.fetchRates.bind(this);
     this.handleAmountChange = this.handleAmountChange.bind(this);
-    this.handleBaseSelection = this.handleBaseSelection.bind(this);
-    this.handleTargetSelection = this.handleTargetSelection.bind(this);
+    this.handleFromSelect = this.handleFromSelect.bind(this);
+    this.handleToSelect = this.handleToSelect.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
   }
 
   // fetch rates with current base
-  fetchRates(base) {
-    fetch(`https://api.frankfurter.app/latest?base=${base}`)
+  fetchRates(from) {
+    fetch(`https://api.frankfurter.app/latest?base=${from}`)
       .then(checkStatus)
       .then(json)
       .then((data) => {
         // update state based on data from api
         this.setState({
           rates: data.rates,
+          // reset error if successful
+          error: ''
         });
       })
       // error handling
       .catch((error) => {
         this.setState({
-          error: error.message || 'Error while fetching data',
+          error: "Sorry, unable to fetch exchange rates. Please try again later.",
           // reset rates to null to avoid showing outdated data
           rates: null
         })
       });
   }
   
-  // listener for amount input by user
+  // handler for amount input by user
   handleAmountChange(event) {
-    // update amount as user types
-    this.setState({ amount: parseFloat(event.target.value) });
+    const inputValue = parseFloat(event.target.value);
+
+    // only update state if parsed input value is valid number
+    if (!isNaN(inputValue)) {
+      // update amount as user types
+      this.setState({ amount: inputValue });
+    } else {
+      // handle invalid input
+      alert('Please enter a number')
+    }
+    
   }
 
-  // listener for base currency selected from dropdown
-  handleBaseSelection(selectedOption) {
-    console.log("handling base selection");
+  // handler for base currency selected from dropdown
+  handleFromSelect(selectedOption) {
     // update base currency from selection
-    this.setState({ base: selectedOption.label })
+    this.setState({ 
+      from: selectedOption.label,
+      // reset from label & values
+      fromAmtLabel: `From Amount in ${selectedOption.label}`,
+      fromAmtFormatted: '',
+      toAmtFormatted: '',
+    })
     // fetch rates with new base
-    this.fetchRates(this.state.base)
+    this.fetchRates(this.state.from)
   }
 
-  // listener for target currency selected from dropdown
-  handleTargetSelection(selectedOption) {
+  // handler for target currency selected from dropdown
+  handleToSelect(selectedOption) {
     // update target currency from selection
-    this.setState({ target: selectedOption.label })
+    this.setState({ 
+      to: selectedOption.label,
+      // reset to label & values
+      fromAmtFormatted: '',
+      toAmtLabel: `To Amount in ${selectedOption.label}`,
+      toAmtFormatted: '',
+    })
   }
 
   // submit event handler
   handleSubmit(event) {
     event.preventDefault();
-    let { base, target, amount } = this.state;
-    this.convert(base, target, amount);
+    let { from, to, amount } = this.state;
+    this.convert(from, to, amount);
   }
 
-  // conversion function adapted from frankfurter.dev 
-  convert(base, target, amount) {
-    fetch(`https://api.frankfurter.app/latest?base=${base}&symbols=${target}`)
-      .then((resp) => resp.json())
+  // conversion function
+  convert(from, to, amount) {
+    // get locale IDs from currency codes
+    const fromLocaleID = currencyToLocale(from);
+    const toLocaleID = currencyToLocale(to);
+
+    fetch(`https://api.frankfurter.app/latest?base=${from}&symbols=${to}`)
+      .then((response) => response.json())
       .then((data) => {
+        // create conversion value independent of state update for convertedAmt
+        const calculatedToAmt = (
+          // adapted from frankfurter.dev
+          amount * data.rates[to]
+        ).toFixed(2);
+
+        // update state with conversion & formatted values
         this.setState ({
-          convertedAmount: (amount * data.rates[target]).toFixed(2)
-        }) 
+          fromAmtFormatted: (Intl.NumberFormat(
+            fromLocaleID, 
+            { style: "currency", currency: from }
+          ).format(amount)),
+          fromAmtLabel: `From Amount in ${from}`,
+          toAmount: calculatedToAmt,
+          toAmtFormatted: (Intl.NumberFormat(
+            toLocaleID, 
+            { style: "currency", currency: to }
+          ).format(calculatedToAmt)),
+          // show to amount label
+          toAmtLabel: `To Amount in ${to}`,
+          // reset error if successful
+          error: '',
+        }); 
+      })
+      // error handling
+      .catch((error) => {
+        console.error("Error fetching exchange rates:", error);
+        this.setState({
+          error: "Sorry, unable to fetch exchange rates. Please try again later."
+        })
       });
-    
-    // if convertedAmount div hidden, change to show
-    document.getElementById('convertedAmount').style.display = 'block';
   }
 
   componentDidMount() {
     // fetch current rates for dropdown lists
-    this.fetchRates(this.state.base);
+    this.fetchRates(this.state.from);
 
     // placeholder while rates loading
     if (!this.state.rates) {
@@ -103,10 +160,13 @@ export class CurrencyConverter extends React.Component {
   
   render() {
     const { 
-      base, 
-      target, 
-      amount, 
-      convertedAmount, 
+      from, 
+      to, 
+      amount,
+      fromAmtFormatted,
+      fromAmtLabel, 
+      toAmtFormatted, 
+      toAmtLabel,
       rates, 
       error 
     } = this.state;
@@ -114,34 +174,40 @@ export class CurrencyConverter extends React.Component {
     // if error, render error message in DOM
     if (error) {
       return (
-        <p className="text-danger">{error}</p>
+        <div className='error-container'>
+          <div className='error'>{error}</div>
+        </div>
       )
     }
 
-    // generate default base object
-    const defaultBase = generateDefaultBase(base);
+    // TODO: check if still need (this and below) generate default base object
+    const defaultFrom = generateDefaultBase(from);
 
     // generate default target object
-    const defaultTarget = generateDefaultTarget(target);
+    const defaultTo = generateDefaultTarget(to);
 
     // generate currencies array
     const currencies = generateCurrencies(rates);
 
     // return Currency Converter table
     return (
-      <div className="currency-selection">
+      <div className="inner-container" id="currency-converter-container">
         <h3 className="text-center mb-4">Currency Converter</h3>
     
-        {/* base currency dropdown */}
+        {/* from currency dropdown */}
         <div className="dropdown-container">
           <div className="form-group">
-            <label htmlFor="base-currency" className="form-label">From</label>
+            {/* htmlFor for accessibility */}
+            <label htmlFor="from-currency" className="form-label">From</label>
             <Select
+              className="currency-dropdown"
+              // associate component with label htmlFor
+              id="from-currency"
               // show base currency selection
-              value={defaultBase}
+              value={defaultFrom}
               // pass array of currency objects
               options={currencies}
-              onChange={this.handleBaseSelection}
+              onChange={this.handleFromSelect}
               getOptionLabel={(currency) => (
                 <div className="currency-option">
                   <img 
@@ -155,18 +221,23 @@ export class CurrencyConverter extends React.Component {
             /> 
           </div>
 
-          {/* double arrow between currencies from https://www.w3schools.com/charsets/ref_utf_arrows.asp */}
-          <span className="arrow">&#8596;</span>
+          {/* switch arrow between currencies from 
+          https://www.toptal.com/designers/htmlarrows/arrows/left-arrow-over-right-arrow/ */}
+          <button className="switch-button">
+            <span>&#8646;</span>
+          </button>
 
           {/* target currency dropdown */}
           <div className="form-group">
-            <label htmlFor="target-currency" className="form-label">To</label>
+            <label htmlFor="to-currency" className="form-label">To</label>
             <Select
+              className="currency-dropdown"
+              id="to-currency"
               // match current currency selection
-              value={defaultTarget} 
+              value={defaultTo} 
               // pass array of currency objects
               options={currencies}
-              onChange={this.handleTargetSelection}
+              onChange={this.handleToSelect}
               getOptionLabel={(currency) => (
                 <div className="currency-option">
                   <img 
@@ -181,42 +252,61 @@ export class CurrencyConverter extends React.Component {
           </div>
         </div>
 
-        {/* amount input & converted amount fields */}
-        <div className="amount-container mt-4">
-          <div className="form-group">
-            <label htmlFor="amount" className="form-label">Amount</label>
-            <input 
-              type="number" 
-              id="amount" 
-              className="form-control" 
-              value={amount} 
-              onChange={this.handleAmountChange}
-              // from https://www.geeksforgeeks.org/react-onkeydown-event/
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  this.handleSubmit(event);
-                }
-              }}
-            />
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              onClick={this.handleSubmit}
-            >
-              Convert
-            </button>
+        {/* amount input, submit button converted amount fields, wrapped in form element */}
+        <form onSubmit={this.handleSubmit}>
+          <div className="amount-container mt-4">
+            <div className="form-group">
+              <label htmlFor="amount" className="form-label">Amount to Convert
+              </label>
+              <input  
+                type="text"
+                id="amount-to-convert" 
+                className="form-control" 
+                value={ amount }
+                onChange={this.handleAmountChange}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    this.handleSubmit(event);
+                  }
+                }}
+              />
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Convert
+              </button>
+            </div>
           </div>
+        </form>
+        
+        {/* from amount */}
+        <div id="from-amount">
+          <label id="from-amt-label" htmlFor="from-amt">
+              {fromAmtLabel}
+          </label>
+          
+          <input 
+            type="text" 
+            id="from-amt-formatted"
+            value={fromAmtFormatted} 
+            readOnly
+          />
+        </div>
 
-          {/* converted amount appears following submit */}
-          <div id="convertedAmount">
-            <label htmlFor="convertedAmount">Converted Amount</label>
-            <input 
-              type="text" 
-              value={convertedAmount} 
-              readOnly
-            />
-          </div>
+        {/* target amount (converted) */}
+        <div id="to-amount">
+          <label id="to-amt-label" htmlFor="to-amt">
+              {toAmtLabel}
+          </label> 
+          
+          <input 
+            type="text" 
+            id="to-amt-formatted"
+            value={toAmtFormatted} 
+            readOnly
+          />
         </div>
       </div>
     )

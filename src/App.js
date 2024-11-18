@@ -1,6 +1,6 @@
 import React from 'react';
-import { CurrencyConverter } from './components/CurrencyConverter';
-import { ExchangeRates } from './components/ExchangeRates';
+import { CurrencyConverter } from './components/CurrencyConverter.js';
+import { ExchangeRates } from './components/ExchangeRates.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 

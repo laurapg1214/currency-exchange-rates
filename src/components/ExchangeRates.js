@@ -1,13 +1,12 @@
 import React from 'react';
 import Select from 'react-select';
-import { json, checkStatus } from '../utils';
-import { generateCurrencies } from './Currencies';
+import { json, checkStatus } from '../utils.js';
+import { generateCurrencies } from './Currencies.js';
 
 // rendered UI - presentational component (stateless)
 const ExchangeRatesTable = (props) => {
   // object destructuring: pull properties out of props object returned by api call
   const { base, date, rates, handleBaseRateSelect } = props;
-  console.log(rates);
 
   // check rates object exists
   if (!rates) {
@@ -19,11 +18,10 @@ const ExchangeRatesTable = (props) => {
 
   // create default base value for dropdown
   const defaultBase = currencies.find(currency => currency.label === base.toLowerCase());
-  console.log(defaultBase);
   
   // return Exchange Rates table
   return (
-    <div className="container">
+    <div className="inner-container" id="exchange-rates-container">
       <h3>Exchange Rates</h3>
       <h4>as of {date}</h4>
 
@@ -31,6 +29,7 @@ const ExchangeRatesTable = (props) => {
       <div>
         <label htmlFor="base-rate" className="form-label">Base Rate</label>
         <Select
+          className="currency-dropdown"
           // match current currency selection
           value={defaultBase} 
           // pass array of currency objects
