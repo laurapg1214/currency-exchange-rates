@@ -4,9 +4,9 @@ import currencyToLocale from 'currency-to-locale'; // my package on npm
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from '../utils.js';
 import { 
-  generateDefaultBase, 
-  generateDefaultTarget, 
-  generateCurrencies 
+  generateDefaultFrom, 
+  generateDefaultTo, 
+  generateCurrencies, 
 } from './Currencies.js';
 
 // container component 
@@ -14,23 +14,27 @@ export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      from: 'GBP',
-      to: 'USD',
-      amount: 1.0,
-      fromAmount: null,
-      fromAmtFormatted: '£1.00',
-      fromAmtLabel: 'From Amount',
-      toAmount: null,
-      toAmtFormatted: '',
-      toAmtLabel: 'To Amount',
+      from: 'USD',
+      to: 'INR',
+      fromAmount: '1',
+      fromFormatted: '',
+      fromLabel: 'Amount to convert:',
+      displayFormatted: false, // controls what shows in input field
+      equalSign: '', // empty until conversion
+      toFormatted: '',
+      toLabel: '',
       rates: null,
       error: '',
     };
 
+    // create ref to input field for control of blurring
+    this.inputRef = React.createRef();
+
+    // bind methods
     this.fetchRates = this.fetchRates.bind(this);
-    this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleFromSelect = this.handleFromSelect.bind(this);
     this.handleToSelect = this.handleToSelect.bind(this);
+    this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
   }
@@ -46,7 +50,8 @@ export class CurrencyConverter extends React.Component {
           rates: data.rates,
           // reset error if successful
           error: ''
-        });
+        }
+      )
       })
       // error handling
       .catch((error) => {
@@ -57,21 +62,6 @@ export class CurrencyConverter extends React.Component {
         })
       });
   }
-  
-  // handler for amount input by user
-  handleAmountChange(event) {
-    const inputValue = parseFloat(event.target.value);
-
-    // only update state if parsed input value is valid number
-    if (!isNaN(inputValue)) {
-      // update amount as user types
-      this.setState({ amount: inputValue });
-    } else {
-      // handle invalid input
-      alert('Please enter a number')
-    }
-    
-  }
 
   // handler for base currency selected from dropdown
   handleFromSelect(selectedOption) {
@@ -79,9 +69,9 @@ export class CurrencyConverter extends React.Component {
     this.setState({ 
       from: selectedOption.label,
       // reset from label & values
-      fromAmtLabel: `From Amount in ${selectedOption.label}`,
-      fromAmtFormatted: '',
-      toAmtFormatted: '',
+      fromLabel: `Amount in ${ selectedOption.label }`,
+      fromFormatted: '',
+      toFormatted: '',
     })
     // fetch rates with new base
     this.fetchRates(this.state.from)
@@ -93,21 +83,52 @@ export class CurrencyConverter extends React.Component {
     this.setState({ 
       to: selectedOption.label,
       // reset to label & values
-      fromAmtFormatted: '',
-      toAmtLabel: `To Amount in ${selectedOption.label}`,
-      toAmtFormatted: '',
+      fromFormatted: '',
+      toLabel: `Amount in ${ selectedOption.label }`,
+      toFormatted: '',
+    })
+  }
+
+  // handler for amount input by user
+  handleAmountChange(event) {
+    const inputValue = (event.target.value)
+    // allow empty input field if user deletes current value
+    if (inputValue === '') {
+      this.setState({ fromAmount: '' });
+    } 
+    this.setState({
+      fromAmount: inputValue,
+      displayFormatted: false
     })
   }
 
   // submit event handler
   handleSubmit(event) {
     event.preventDefault();
-    let { from, to, amount } = this.state;
-    this.convert(from, to, amount);
+
+    // remove focus from input field
+    if (this.inputRef.current) {
+      this.inputRef.current.blur();
+    }
+    
+    // run conversion
+    let { from, to, fromAmount } = this.state;
+    this.convert(from, to, fromAmount);
   }
 
   // conversion function
-  convert(from, to, amount) {
+  convert(from, to, fromAmount) {
+    // convert entered amount to float
+    const floatAmount = parseFloat(fromAmount);
+
+    // check for non-numeric or negative entry
+    if (isNaN(floatAmount) || floatAmount < 0) {
+      this.setState({
+        error: "Please enter a positive number to convert."
+      });
+      return;
+    }
+
     // get locale IDs from currency codes
     const fromLocaleID = currencyToLocale(from);
     const toLocaleID = currencyToLocale(to);
@@ -116,28 +137,30 @@ export class CurrencyConverter extends React.Component {
       .then((response) => response.json())
       .then((data) => {
         // create conversion value independent of state update for convertedAmt
-        const calculatedToAmt = (
+        const toAmount = (
           // adapted from frankfurter.dev
-          amount * data.rates[to]
+          fromAmount * data.rates[to]
         ).toFixed(2);
 
         // update state with conversion & formatted values
         this.setState ({
-          fromAmtFormatted: (Intl.NumberFormat(
+          fromFormatted: (Intl.NumberFormat(
             fromLocaleID, 
             { style: "currency", currency: from }
-          ).format(amount)),
-          fromAmtLabel: `From Amount in ${from}`,
-          toAmount: calculatedToAmt,
-          toAmtFormatted: (Intl.NumberFormat(
+          ).format(fromAmount)),
+          fromLabel: `Amount in ${from}`,
+          toFormatted: (Intl.NumberFormat(
             toLocaleID, 
             { style: "currency", currency: to }
-          ).format(calculatedToAmt)),
+          ).format(toAmount)),
           // show to amount label
-          toAmtLabel: `To Amount in ${to}`,
+          toLabel: `Amount in ${to}`,
+          // toggle to fromFormatted in input field
+          displayFormatted: true,
+          equalSign: '=',
           // reset error if successful
           error: '',
-        }); 
+        });
       })
       // error handling
       .catch((error) => {
@@ -162,14 +185,21 @@ export class CurrencyConverter extends React.Component {
     const { 
       from, 
       to, 
-      amount,
-      fromAmtFormatted,
-      fromAmtLabel, 
-      toAmtFormatted, 
-      toAmtLabel,
-      rates, 
+      fromAmount,
+      fromFormatted,
+      displayFormatted,
+      fromLabel, 
+      toFormatted, 
+      toLabel,
+      equalSign,
+      rates,
       error 
     } = this.state;
+
+    // placeholder while rates loading
+    if (!this.state.rates) {
+      return <p>Loading rates...</p>
+    };
 
     // if error, render error message in DOM
     if (error) {
@@ -181,89 +211,127 @@ export class CurrencyConverter extends React.Component {
     }
 
     // TODO: check if still need (this and below) generate default base object
-    const defaultFrom = generateDefaultBase(from);
+    const defaultFrom = generateDefaultFrom(from);
 
     // generate default target object
-    const defaultTo = generateDefaultTarget(to);
+    const defaultTo = generateDefaultTo(to);
 
-    // generate currencies array
+    // generate currencies for dropdowns
     const currencies = generateCurrencies(rates);
 
     // return Currency Converter table
     return (
       <div className="inner-container" id="currency-converter-container">
         <h3 className="text-center mb-4">Currency Converter</h3>
-    
-        {/* from currency dropdown */}
-        <div className="dropdown-container">
-          <div className="form-group">
+
+        {/* row with labels */}
+        <div className="row mb-2 currency-converter-row">
+          <div className="col-4">
             {/* htmlFor for accessibility */}
-            <label htmlFor="from-currency" className="form-label">From</label>
-            <Select
-              className="currency-dropdown"
-              // associate component with label htmlFor
-              id="from-currency"
-              // show base currency selection
-              value={defaultFrom}
-              // pass array of currency objects
-              options={currencies}
-              onChange={this.handleFromSelect}
-              getOptionLabel={(currency) => (
-                <div className="currency-option">
-                  <img 
-                    src={currency.image} 
-                    alt={`${currency.label} flag`} 
-                    style={{ width: 16, marginRight: 8 }}
-                  />
-                  <span>{currency.label}</span>
-                </div>
-              )}
-            /> 
+            <label htmlFor="from-currency" className="label">From</label>
           </div>
-
-          {/* switch arrow between currencies from 
-          https://www.toptal.com/designers/htmlarrows/arrows/left-arrow-over-right-arrow/ */}
-          <button className="switch-button">
-            <span>&#8646;</span>
-          </button>
-
-          {/* target currency dropdown */}
-          <div className="form-group">
-            <label htmlFor="to-currency" className="form-label">To</label>
-            <Select
-              className="currency-dropdown"
-              id="to-currency"
-              // match current currency selection
-              value={defaultTo} 
-              // pass array of currency objects
-              options={currencies}
-              onChange={this.handleToSelect}
-              getOptionLabel={(currency) => (
-                <div className="currency-option">
-                  <img 
-                    src={currency.image} 
-                    alt={`${currency.label} flag`} 
-                    style={{ width: 16, marginRight: 8 }}
-                  />
-                  <span>{currency.label}</span>
-                </div>
-              )}
-            /> 
+          <div className="col-3">
+            {/* empty column for switch button in row below */}
+          </div>
+          <div className="col-4">
+            <label htmlFor="to-currency" className="label">To</label>
+          </div>
+        </div>
+    
+        {/* row with dropdowns */}
+        <div className="row mb-4 currency-converter-row">
+          <div className="col-4">
+            <div className="dropdown">
+              <Select
+                // associate component with label htmlFor
+                id="from-currency"
+                // show base currency selection
+                value={ defaultFrom }
+                // pass array of currency objects
+                options={ currencies }
+                onChange={ this.handleFromSelect }
+                getOptionLabel={(currency) => (
+                  <div className="currency-option">
+                    {/* use of images with react-select adapted from 
+                    https://stackoverflow.com/questions/45940726/populate-react-select-with-image */}
+                    <img 
+                      src={currency.image} 
+                      alt={`${ currency.label } flag`} 
+                      style={{ width: 16, marginRight: 8 }}
+                    />
+                    <span>{currency.label}</span>
+                  </div>
+                )}
+              /> 
+            </div>
+          </div>
+          <div className="col-3" id="switch-button">
+            <div id="switch-button">
+              {/* switch arrow between currencies from 
+              https://www.toptal.com/designers/htmlarrows/arrows/left-arrow-over-right-arrow/ */}
+              <button className="btn btn-success" id="switch-button">
+                <span>&#8646;</span>
+              </button>
+            </div>
+          </div>
+          <div className="col-4">
+            <div className="dropdown">
+              {/* target currency dropdown */}
+              <Select
+                // associate component with label htmlFor
+                id="to-currency"
+                // match current currency selection
+                value={ defaultTo } 
+                // pass array of currency objects
+                options={ currencies }
+                onChange={ this.handleToSelect }
+                getOptionLabel={(currency) => (
+                  <div className="currency-option">
+                    <img 
+                      src={currency.image} 
+                      alt={`${ currency.label } flag`} 
+                      style={{ width: 16, marginRight: 8 }}
+                    />
+                    <span>{currency.label}</span>
+                  </div>
+                )}
+              /> 
+            </div>
+          </div>
+        </div>
+        
+        {/* row with labels */}
+        <div className="row mb-2 currency-converter-row">
+          <div className="col-4">
+            {/* htmlFor for accessibility */}
+            <label htmlFor="from-amount" className="label">{ fromLabel }</label>
+          </div>
+          <div className="col-3">
+            {/* empty column for equal sign in row below */}
+          </div>
+          <div className="col-4">
+            <label htmlFor="to-amount" className="label">{ toLabel }</label> 
           </div>
         </div>
 
-        {/* amount input, submit button converted amount fields, wrapped in form element */}
-        <form onSubmit={this.handleSubmit}>
-          <div className="amount-container mt-4">
-            <div className="form-group">
-              <label htmlFor="amount" className="form-label">Amount to Convert
-              </label>
+        {/* row with amount boxes */}
+        <div className="row mb-4 currency-converter-row">
+          {/* from amount input */}
+          <div className="col-4">
+            <div>
+              {/* from amount input field */}
               <input  
                 type="text"
-                id="amount-to-convert" 
-                className="form-control" 
-                value={ amount }
-                onChange={this.handleAmountChange}
+                id="from-amount"
+                className="amount-field" 
+                // toggles between fromFormatted & fromAmount
+                value={ displayFormatted ? fromFormatted : fromAmount }
+                onChange={ this.handleAmountChange }
+                // switch to fromAmount on focus
+                onFocus={ () => this.setState({ displayFormatted: false }) }
+                // attach blur method to input field
+                ref={ this.inputRef }
+                // enter key press = convert button press
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
                     event.preventDefault();
@@ -271,42 +339,35 @@ export class CurrencyConverter extends React.Component {
                   }
                 }}
               />
-              <button 
-                type="submit" 
-                className="btn btn-primary"
-              >
-                Convert
-              </button>
             </div>
           </div>
-        </form>
-        
-        {/* from amount */}
-        <div id="from-amount">
-          <label id="from-amt-label" htmlFor="from-amt">
-              {fromAmtLabel}
-          </label>
-          
-          <input 
-            type="text" 
-            id="from-amt-formatted"
-            value={fromAmtFormatted} 
-            readOnly
-          />
+          <div className="col-3">
+            <h4>{equalSign}</h4>
+          </div>
+          <div className="col-4">
+            {/* target amount (converted) */}
+            <div>
+              <input 
+                type="text" 
+                className="amount-field"
+                id="to-amount"
+                value={ toFormatted } 
+                readOnly
+                disabled={ !toFormatted } // disabled before conversion
+              />
+            </div>
+          </div>
         </div>
 
-        {/* target amount (converted) */}
-        <div id="to-amount">
-          <label id="to-amt-label" htmlFor="to-amt">
-              {toAmtLabel}
-          </label> 
-          
-          <input 
-            type="text" 
-            id="to-amt-formatted"
-            value={toAmtFormatted} 
-            readOnly
-          />
+        {/* convert button */}
+        <div id="convert-button">
+          <button 
+            type="submit" 
+            className="btn btn-success"
+            onClick={ this.handleSubmit }
+          >
+            Convert
+          </button>
         </div>
       </div>
     )

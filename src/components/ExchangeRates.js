@@ -13,7 +13,7 @@ const ExchangeRatesTable = (props) => {
     return <p>Loading rates...</p>;
   }
 
-  // generate currencies array
+  // get currencies array
   const currencies = generateCurrencies(rates);
 
   // create default base value for dropdown
