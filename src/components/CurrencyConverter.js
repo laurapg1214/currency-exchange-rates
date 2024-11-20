@@ -18,10 +18,12 @@ export class CurrencyConverter extends React.Component {
       from: 'USD',
       to: 'INR',
       fromAmount: '1',
+      toAmount: '',
       fromFormatted: '',
       toFormatted: '',
       fromLabel: 'Amount to convert:',
       toLabel: '',
+      switchCurrenciesOnly: true, // for switchFromTo functionality
       displayFormatted: false, // controls what shows in from input field
       equalSign: '', // empty until convert button clicked
       currencies: null,
@@ -35,6 +37,7 @@ export class CurrencyConverter extends React.Component {
     // bind methods
     this.handleFromSelect = this.handleFromSelect.bind(this);
     this.handleToSelect = this.handleToSelect.bind(this);
+    this.switchFromTo = this.switchFromTo.bind(this);
     this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
@@ -66,6 +69,32 @@ export class CurrencyConverter extends React.Component {
       toLabel: `Amount in ${ selectedOption.label }`,
       toFormatted: '',
     })
+  }
+
+  
+  // handler for switch button click
+  switchFromTo(event) {
+    // create tmp variables
+    const fromTmp = this.state.from;
+    const fromAmountTmp = this.state.fromAmount;
+    const fromFormattedTmp = this.state.fromFormatted;
+    const fromLabelTmp = this.state.fromLabel;
+
+    this.setState({
+      from: this.state.to,
+      to: fromTmp
+    })
+
+    if (!this.state.switchCurrenciesOnly) {
+      this.setState({
+        fromAmount: this.state.toAmount,
+        toAmount: fromAmountTmp,
+        fromFormatted: this.state.toFormatted,
+        toFormatted: fromFormattedTmp,
+        fromLabel: this.state.toLabel,
+        toLabel: fromLabelTmp
+      });
+    };
   }
 
   // handler for amount input by user
@@ -136,6 +165,9 @@ export class CurrencyConverter extends React.Component {
           toLabel: `Amount in ${to}`,
           // toggle to fromFormatted in input field
           displayFormatted: true,
+          // for switchFromTo functionality
+          switchCurrenciesOnly: false,
+          // show equal sign on first convert
           equalSign: '=',
           // reset error if successful
           error: '',
@@ -278,7 +310,11 @@ export class CurrencyConverter extends React.Component {
             <div id="switch-button">
               {/* switch arrow between currencies from 
               https://www.toptal.com/designers/htmlarrows/arrows/left-arrow-over-right-arrow/ */}
-              <button className="btn btn-success" id="switch-button">
+              <button 
+                className="btn btn-success" 
+                id="switch-button"
+                onClick={ this.switchFromTo }
+              >
                 <span>&#8646;</span>
               </button>
             </div>
