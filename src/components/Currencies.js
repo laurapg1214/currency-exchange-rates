@@ -37,20 +37,39 @@ export const generateDefaultTo = (to) => {
   };
 }
 
-export const generateCurrencies = (rates) => {
-  // generate array of currencies (excluding base)
-  if (!rates) {
-    return;
-  }
-  return Object.keys(rates).map((currencyCode) => {
-    // assign flag path var to handle no flag image
-    
-    return {
-      value: currencyCode.toLowerCase(),
-      label: currencyCode,
-      image: getFlagPath(currencyCode)
-    };
-  });
+// fetch rates with current base
+export const fetchRates = (base) => {
+  return fetch(`https://api.frankfurter.app/latest?base=${base}`)
+    .then(checkStatus)
+    .then(json)
+    .then((data) => {
+      // return rates object for updating rates state in components
+      return data.rates;
+      }
+    )
+    // error handling
+    .catch((error) => {
+      return error;
+    });
 }
 
-
+export const fetchCurrencies = () => {
+  // generate array of all currencies
+  return fetch('https://api.frankfurter.app/currencies')
+    .then(checkStatus)
+    .then(json)
+    .then((data) => {
+      // create array of currencies with flag images
+      return Object.keys(data).map((currencyCode) => {
+        return {
+          value: currencyCode.toLowerCase(),
+          label: currencyCode,
+          image: getFlagPath(currencyCode) // assign flag path var to handle no flag image
+        };
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching currencies:", error);
+      return("Error fetching currencies:", error);
+    })
+}

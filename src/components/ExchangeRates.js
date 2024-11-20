@@ -1,7 +1,10 @@
 import React from 'react';
 import Select from 'react-select';
 import { json, checkStatus } from '../utils.js';
-import { generateCurrencies } from './Currencies.js';
+import { 
+  fetchRates,
+  fetchCurrencies
+ } from './Currencies.js';
 
 // rendered UI - presentational component (stateless)
 const ExchangeRatesTable = (props) => {
@@ -14,10 +17,10 @@ const ExchangeRatesTable = (props) => {
   }
 
   // get currencies array
-  const currencies = generateCurrencies(rates);
+  const currencies = fetchCurrencies();
 
   // create default base value for dropdown
-  const defaultBase = currencies.find(currency => currency.label === base.toLowerCase());
+  const defaultBase = 'EUR' // currencies.find(currency => currency.label === base.toLowerCase());
   
   // return Exchange Rates table
   return (

@@ -1,13 +1,14 @@
 import React from 'react';
 import Select from 'react-select';
 import currencyToLocale from 'currency-to-locale'; // my package on npm
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { json, checkStatus } from '../utils.js';
 import { 
   generateDefaultFrom, 
   generateDefaultTo, 
-  generateCurrencies, 
+  fetchRates,
+  fetchCurrencies, 
 } from './Currencies.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // container component 
 export class CurrencyConverter extends React.Component {
@@ -18,49 +19,25 @@ export class CurrencyConverter extends React.Component {
       to: 'INR',
       fromAmount: '1',
       fromFormatted: '',
-      fromLabel: 'Amount to convert:',
-      displayFormatted: false, // controls what shows in input field
-      equalSign: '', // empty until conversion
       toFormatted: '',
+      fromLabel: 'Amount to convert:',
       toLabel: '',
+      displayFormatted: false, // controls what shows in from input field
+      equalSign: '', // empty until convert button clicked
+      currencies: null,
       rates: null,
       error: '',
     };
 
-    // create ref to input field for control of blurring
+    // create ref to input field for control of focus & blurring
     this.inputRef = React.createRef();
 
     // bind methods
-    this.fetchRates = this.fetchRates.bind(this);
     this.handleFromSelect = this.handleFromSelect.bind(this);
     this.handleToSelect = this.handleToSelect.bind(this);
     this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
-  }
-
-  // fetch rates with current base
-  fetchRates(from) {
-    fetch(`https://api.frankfurter.app/latest?base=${from}`)
-      .then(checkStatus)
-      .then(json)
-      .then((data) => {
-        // update state based on data from api
-        this.setState({
-          rates: data.rates,
-          // reset error if successful
-          error: ''
-        }
-      )
-      })
-      // error handling
-      .catch((error) => {
-        this.setState({
-          error: "Sorry, unable to fetch exchange rates. Please try again later.",
-          // reset rates to null to avoid showing outdated data
-          rates: null
-        })
-      });
   }
 
   // handler for base currency selected from dropdown
@@ -70,11 +47,12 @@ export class CurrencyConverter extends React.Component {
       from: selectedOption.label,
       // reset from label & values
       fromLabel: `Amount in ${ selectedOption.label }`,
+      displayFormatted: false,
       fromFormatted: '',
       toFormatted: '',
     })
     // fetch rates with new base
-    this.fetchRates(this.state.from)
+    fetchRates(this.state.from)
   }
 
   // handler for target currency selected from dropdown
@@ -84,6 +62,7 @@ export class CurrencyConverter extends React.Component {
       to: selectedOption.label,
       // reset to label & values
       fromFormatted: '',
+      displayFormatted: false,
       toLabel: `Amount in ${ selectedOption.label }`,
       toFormatted: '',
     })
@@ -172,13 +151,46 @@ export class CurrencyConverter extends React.Component {
   }
 
   componentDidMount() {
-    // fetch current rates for dropdown lists
-    this.fetchRates(this.state.from);
+    const { from } = this.state;
 
-    // placeholder while rates loading
-    if (!this.state.rates) {
-      return <p>Loading rates...</p>
-    }
+    // focus input field to allow onKeyDown listener,
+    // with slight delay to give element time to render
+    setTimeout(() => {
+      if (this.inputRef.current) {
+        this.inputRef.current.focus();
+      };
+    }, 100);
+
+    // fetch full list of currencies
+    fetchCurrencies()
+      .then((currencies) => {
+        this.setState({
+          currencies,
+          // reset error state if successful
+          error:''
+        });
+      })
+      .catch((error) => {
+        this.setState({ 
+          currencies: null,
+          error: error.message
+        });
+      });
+
+    // fetch rates using current base (from)
+    fetchRates(from)
+      .then((rates) => {
+        this.setState ({
+          rates,
+          error: ''
+        })
+      })
+      .catch((error) => {
+        console.errer("Error fetching rates:", error);
+        this.setState({
+          error: `Error fetching rates: ${error}`
+        })
+      })
   }
   
   render() {
@@ -192,7 +204,7 @@ export class CurrencyConverter extends React.Component {
       toFormatted, 
       toLabel,
       equalSign,
-      rates,
+      currencies,
       error 
     } = this.state;
 
@@ -210,14 +222,11 @@ export class CurrencyConverter extends React.Component {
       )
     }
 
-    // TODO: check if still need (this and below) generate default base object
+    // generate default base object
     const defaultFrom = generateDefaultFrom(from);
 
     // generate default target object
     const defaultTo = generateDefaultTo(to);
-
-    // generate currencies for dropdowns
-    const currencies = generateCurrencies(rates);
 
     // return Currency Converter table
     return (
