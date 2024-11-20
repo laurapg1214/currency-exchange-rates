@@ -34,42 +34,32 @@ export class CurrencyConverter extends React.Component {
     this.inputRef = React.createRef();
 
     // bind methods
-    this.handleFromSelect = this.handleFromSelect.bind(this);
-    this.handleToSelect = this.handleToSelect.bind(this);
+    this.handleCurrencySelect = this.handleCurrencySelect.bind(this);
     this.switchFromTo = this.switchFromTo.bind(this);
     this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.convert = this.convert.bind(this);
   }
 
-  // handler for base currency selected from dropdown
-  handleFromSelect(selectedOption) {
-    // update base currency from selection
+  // handler for base/target currency selected from dropdowns
+  handleCurrencySelect(selectedOption, type) {
+    const isFrom = type === 'from';
+
+    // update base/target currency from selection
     this.setState({ 
-      from: selectedOption.label,
+      [type]: selectedOption.label,
       // reset from label & values
-      fromLabel: `Amount in ${ selectedOption.label }`,
-      displayFormatted: false,
+      [`${ type }Label`]: `Amount in ${ selectedOption.label }`,
       fromFormatted: '',
       toFormatted: '',
-    })
-    // fetch rates with new base
-    fetchRates(this.state.from)
-  }
-
-  // handler for target currency selected from dropdown
-  handleToSelect(selectedOption) {
-    // update target currency from selection
-    this.setState({ 
-      to: selectedOption.label,
-      // reset to label & values
-      fromFormatted: '',
       displayFormatted: false,
-      toLabel: `Amount in ${ selectedOption.label }`,
-      toFormatted: '',
-    })
+    }, () => {
+      // callback - if base (from) updated, fetch rates
+      if (isFrom) {
+        fetchRates(this.state.from)
+      }   
+    });
   }
-
   
   // handler for switch button click
   switchFromTo(event) {
@@ -98,10 +88,11 @@ export class CurrencyConverter extends React.Component {
 
   // handler for amount input by user
   handleAmountChange(event) {
-    const inputValue = (event.target.value)
+    const inputValue = (event.target.value);
+
     // allow empty input field if user deletes current value
     if (inputValue === '') {
-      this.setState({ fromAmount: '' });
+      this.setState({ fromAmount: '0' });
     } 
     this.setState({
       fromAmount: inputValue,
@@ -142,22 +133,24 @@ export class CurrencyConverter extends React.Component {
       .then((response) => response.json())
       .then((data) => {
         // create conversion value independent of state update for convertedAmt
-        const toAmount = (
-          // adapted from frankfurter.dev
-          fromAmount * data.rates[to]
-        ).toFixed(2);
+        // conversion calculation adapted from frankfurter.dev
+        const toAmount = (fromAmount * data.rates[to]).toFixed(2);
 
         // update state with conversion & formatted values
         this.setState ({
+          toAmount,
           fromFormatted: (Intl.NumberFormat(
             fromLocaleID, 
             { style: "currency", currency: from }
           ).format(fromAmount)),
-          fromLabel: `Amount in ${from}`,
+
           toFormatted: (Intl.NumberFormat(
             toLocaleID, 
             { style: "currency", currency: to }
           ).format(toAmount)),
+
+          toAmount,
+          fromLabel: `Amount in ${from}`,
           // show to amount label
           toLabel: `Amount in ${to}`,
           // toggle to fromFormatted in input field
@@ -285,17 +278,17 @@ export class CurrencyConverter extends React.Component {
                 value={ defaultFrom }
                 // pass array of currency objects
                 options={ currencies }
-                onChange={ this.handleFromSelect }
+                onChange={ (selectedOption) => this.handleCurrencySelect(selectedOption, 'from') }
                 getOptionLabel={(currency) => (
                   <div className="currency-option">
                     {/* use of images with react-select adapted from 
                     https://stackoverflow.com/questions/45940726/populate-react-select-with-image */}
                     <img 
-                      src={currency.image} 
+                      src={ currency.image } 
                       alt={`${ currency.label } flag`} 
                       style={{ width: 16, marginRight: 8 }}
                     />
-                    <span>{currency.label}</span>
+                    <span>{ currency.label }</span>
                   </div>
                 )}
               /> 
@@ -324,7 +317,7 @@ export class CurrencyConverter extends React.Component {
                 value={ defaultTo } 
                 // pass array of currency objects
                 options={ currencies }
-                onChange={ this.handleToSelect }
+                onChange={ (selectedOption) => this.handleCurrencySelect(selectedOption, 'to') }
                 getOptionLabel={(currency) => (
                   <div className="currency-option">
                     <img 

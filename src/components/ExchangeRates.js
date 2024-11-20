@@ -93,9 +93,9 @@ export class ExchangeRates extends React.Component {
         <h3>Exchange Rates</h3>
         <h5>as of { date }</h5>
 
-        {/* base rate select dropdown */}
+        {/* base currency select dropdown */}
         <div>
-          <label htmlFor="base-rate" className="form-label">Base Rate</label>
+          <label htmlFor="base-rate" className="form-label">Base Currency</label>
           <Select
             className="currency-dropdown"
             // match current currency selection

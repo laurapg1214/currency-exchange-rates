@@ -45,7 +45,7 @@ code {
 }
 
 /* header styling for titles of components */
-h3, h4 {
+h3, h5 {
   font-weight: 600;
   text-align: center;
 }
