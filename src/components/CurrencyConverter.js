@@ -1,7 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
 import currencyToLocale from 'currency-to-locale'; // my package on npm
-import { json, checkStatus } from '../utils.js';
 import { 
   generateDefaultFrom, 
   generateDefaultTo, 
@@ -82,7 +81,7 @@ export class CurrencyConverter extends React.Component {
 
     this.setState({
       from: this.state.to,
-      to: fromTmp
+      to: fromTmp,
     })
 
     if (!this.state.switchCurrenciesOnly) {
@@ -92,7 +91,7 @@ export class CurrencyConverter extends React.Component {
         fromFormatted: this.state.toFormatted,
         toFormatted: fromFormattedTmp,
         fromLabel: this.state.toLabel,
-        toLabel: fromLabelTmp
+        toLabel: fromLabelTmp,
       });
     };
   }
@@ -106,7 +105,7 @@ export class CurrencyConverter extends React.Component {
     } 
     this.setState({
       fromAmount: inputValue,
-      displayFormatted: false
+      displayFormatted: false,
     })
   }
 
@@ -131,9 +130,7 @@ export class CurrencyConverter extends React.Component {
 
     // check for non-numeric or negative entry
     if (isNaN(floatAmount) || floatAmount < 0) {
-      this.setState({
-        error: "Please enter a positive number to convert."
-      });
+      this.setState({ error: "Please enter a positive valid number." });
       return;
     }
 
@@ -175,10 +172,9 @@ export class CurrencyConverter extends React.Component {
       })
       // error handling
       .catch((error) => {
-        console.error("Error fetching exchange rates:", error);
-        this.setState({
-          error: "Sorry, unable to fetch exchange rates. Please try again later."
-        })
+        this.setState(
+          { error: "Sorry, unable to fetch the converted rate. Please try again later." }
+        )
       });
   }
 
@@ -193,20 +189,17 @@ export class CurrencyConverter extends React.Component {
       };
     }, 100);
 
-    // fetch full list of currencies
+    // fetch full list of currencies and flags
     fetchCurrencies()
       .then((currencies) => {
         this.setState({
           currencies,
           // reset error state if successful
-          error:''
+          error:'',
         });
       })
       .catch((error) => {
-        this.setState({ 
-          currencies: null,
-          error: error.message
-        });
+        this.setState({ error: error.message || error });
       });
 
     // fetch rates using current base (from)
@@ -214,13 +207,14 @@ export class CurrencyConverter extends React.Component {
       .then((rates) => {
         this.setState ({
           rates,
-          error: ''
+          error: '',
         })
       })
       .catch((error) => {
-        console.errer("Error fetching rates:", error);
         this.setState({
-          error: `Error fetching rates: ${error}`
+          // reset rates to avoid showing outdated data
+          rates: null,
+          error: error.message || error,
         })
       })
   }
@@ -237,11 +231,12 @@ export class CurrencyConverter extends React.Component {
       toLabel,
       equalSign,
       currencies,
+      rates,
       error 
     } = this.state;
 
     // placeholder while rates loading
-    if (!this.state.rates) {
+    if (!rates) {
       return <p>Loading rates...</p>
     };
 
@@ -252,7 +247,7 @@ export class CurrencyConverter extends React.Component {
           <div className='error'>{error}</div>
         </div>
       )
-    }
+    };
 
     // generate default base object
     const defaultFrom = generateDefaultFrom(from);
