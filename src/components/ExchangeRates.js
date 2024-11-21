@@ -132,29 +132,32 @@ export class ExchangeRates extends React.Component {
           </thead>
           <tbody>
             {
-              /* loop through rates object to create rows */
-              Object.keys(rates).map((currencyCode) => {
-                /* get flag emojis 
-                (from https://www.npmjs.com/package/currency-flags) */
-                const rate = rates[currencyCode]
-                const flagSrc = `/flags/square-flags/${ currencyCode.toLowerCase() }.svg`; 
+              // loop through currencies array to create rows
+              currencies && currencies.map((currency) => {
+                //get rate for current currency
+                const rate = rates[currency.label];
 
+                // skip rendering if rate unavailable
+                if (!rate) {
+                  return null;
+                }
+                
                 return (
-                  <tr key={ currencyCode }>
+                  <tr key={ currency.label }>
                     <td>
                       <img 
-                        alt={ `${currencyCode } flag`}
-                        src={ flagSrc }
-                        className={`currency-flag currency-flag-${ currencyCode }`} 
+                        src={ currency.image }
+                        alt={ `${ currency.label } flag`}
+                        className={`currency-flag currency-flag-${ currency.label }`} 
                         style={{ width: 16, marginRight: 8 }}
                         />
-                        { currencyCode }
+                        { currency.label }
                     </td>
                     <td>{ rate }</td>
                   </tr>
                 );
               })
-            } 
+            }
           </tbody>
         </table>
       </div>
