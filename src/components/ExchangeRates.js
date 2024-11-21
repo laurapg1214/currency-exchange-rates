@@ -1,5 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
+import { format } from 'date-fns';
 import { 
   fetchRates,
   fetchCurrencies,
@@ -13,7 +14,7 @@ export class ExchangeRates extends React.Component {
     super(props);
     this.state = {
       base: 'USD',
-      date: '',
+      date: format(new Date(), 'd MMMM yyyy'),
       currencies: null,
       rates: null,
       error: '',
@@ -24,13 +25,18 @@ export class ExchangeRates extends React.Component {
 
   // listener for base rate selection
   // selectedOption passed in instead of event bc using React Select
+
+  // TODO: make rates refresh
   handleBaseRateSelect(selectedOption) {
     // update base currency & baseURL from selection
-    this.setState({ base: selectedOption.value }, () => {
+    this.setState({ base: selectedOption.label }, () => {
       // fetchRates passed as callback function after base state update
       fetchRates(this.state.base)
-    });
-  };
+        .then((newRates) => {
+          this.setState({ rates: newRates });
+        });
+      });
+  }
 
   componentDidMount() {
     // fetch full list of currencies and flags
