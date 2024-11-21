@@ -1,4 +1,5 @@
 import React from 'react';
+import NavigationBar from './components/NavigationBar.js';
 import { CurrencyConverter } from './components/CurrencyConverter.js';
 import { ExchangeRates } from './components/ExchangeRates.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -10,15 +11,18 @@ const NotFound = () => {
 
 const App = () => {
   return (
-    <div className="container mt-5">
-      {/* Currency Converter component */}
-      <CurrencyConverter />
+    <div>
+      <NavigationBar />
+      <div className="container mt-5">
+        {/* Currency Converter component */}
+        <CurrencyConverter />
 
-      {/* spacer */}
-      <hr /> 
+        {/* spacer */}
+        <hr /> 
 
-      {/* Exchange Rates component */}
-      <ExchangeRates />
+        {/* Exchange Rates component */}
+        <ExchangeRates />
+      </div>
     </div>
   );
 }

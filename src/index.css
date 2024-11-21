@@ -12,6 +12,20 @@ code {
     monospace;
 }
 
+/* navbar styling */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 10px 20px;
+}
+
+.navbar-brand h3 {
+  color: white;
+  margin: 0;
+}
+
 /* main container */
 .container {
   display: flex;
@@ -108,14 +122,18 @@ h3, h5 {
   align-items: center;
 }
 
-/* table styling for ExchangeRates.js */
+/* ExchangeRates.js element */
 .table {
   margin-top: 20px;
 }
 
-.table thead th {
+.table thead {
   font-weight: bold;
   color: #444;
+}
+
+.base-rate-dropdown {
+  margin-top: 10px;
 }
 
 /* styling for error messages */
