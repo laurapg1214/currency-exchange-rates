@@ -7,14 +7,13 @@ import {
   fetchRates,
   fetchCurrencies, 
 } from './Currencies.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 // container component 
 export class CurrencyConverter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      from: 'USD',
+      from: 'EUR',
       to: 'INR',
       fromAmount: '1',
       toAmount: '',
@@ -49,7 +48,7 @@ export class CurrencyConverter extends React.Component {
     this.setState({ 
       [type]: selectedOption.label,
       // reset from label & values
-      [`${ type }Label`]: `Amount in ${ selectedOption.label }`,
+      [`${ type }Label`]: selectedOption.value,
       fromFormatted: '',
       toFormatted: '',
       displayFormatted: false,
@@ -150,9 +149,14 @@ export class CurrencyConverter extends React.Component {
           ).format(toAmount)),
 
           toAmount,
-          fromLabel: `Amount in ${from}`,
+          fromLabel: this.state.currencies.find(
+            currency => currency.label === from
+          // optional chaining using '?'
+          )?.value || from,
           // show to amount label
-          toLabel: `Amount in ${to}`,
+          toLabel: this.state.currencies.find(
+            currency => currency.label ===to
+          )?.value || to,
           // toggle to fromFormatted in input field
           displayFormatted: true,
           // for switchFromTo functionality
@@ -237,13 +241,13 @@ export class CurrencyConverter extends React.Component {
     if (error) {
       return (
         <div className='error-container'>
-          <div className='error'>{error}</div>
+          <div className='error'>{ error }</div>
         </div>
       )
     };
 
     // generate default base object
-    const defaultFrom = generateDefaultFrom(from);
+    const defaultFrom = generateDefaultFrom(from, currencies);
 
     // generate default target object
     const defaultTo = generateDefaultTo(to);

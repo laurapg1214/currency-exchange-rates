@@ -6,20 +6,21 @@ const getFlagPath = (code) => {
   if (code === 'ISK') {
     return '/flags/icons8-flag-24.png';
   }
-  // dynamic path to flag images
+  /* dynamic path to flag images
+  (from https://www.npmjs.com/package/currency-flags) */
   return `/flags/square-flags/${code.toLowerCase()}.svg`;
 }
 
 export const fetchCurrencies = () => {
-  // generate array of all currencies
+// generate array of all currencies
   return fetch('https://api.frankfurter.app/currencies')
     .then(checkStatus)
     .then(json)
     .then((data) => {
       // create array of currencies with flag images
-      return Object.keys(data).map((currencyCode) => {
+      return Object.entries(data).map(([currencyCode, currencyName]) => {
         return {
-          value: currencyCode.toLowerCase(),
+          value: currencyName,
           label: currencyCode,
           image: getFlagPath(currencyCode) // assign flag path var to handle no flag image
         };
@@ -49,15 +50,18 @@ export const fetchRates = (base) => {
 }
 
 // generate base object for default base currency in dropdown
-export const generateDefaultFrom = (from) => {
+export const generateDefaultFrom = (from, currencies) => {
   // error handling
-  if (!from) {
+  if (!from || !currencies) {
     return;
   }
 
+  // find currencies object in currencies array matching from (as base)
+  const currencyName = currencies.find(c => c.label === from);
+
   // return base currency object
   return {
-    value: from.toLowerCase(),
+    value: currencyName ? currencyName.value : '',
     label: from,
     image: getFlagPath(from)
   };

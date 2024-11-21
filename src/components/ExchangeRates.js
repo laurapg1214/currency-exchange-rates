@@ -13,7 +13,7 @@ export class ExchangeRates extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      base: 'USD',
+      base: 'EUR',
       date: format(new Date(), 'd MMMM yyyy'),
       currencies: null,
       rates: null,
@@ -91,7 +91,7 @@ export class ExchangeRates extends React.Component {
     };
 
     // create default base value for dropdown
-    const defaultBase = generateDefaultFrom(base);
+    const defaultBase = generateDefaultFrom(base, currencies);
 
     // return Exchange Rates table
     return (
@@ -103,7 +103,8 @@ export class ExchangeRates extends React.Component {
         <div>
           <label htmlFor="base-rate" className="form-label">Base Currency</label>
           <Select
-            className="currency-dropdown"
+            className="base-rate-dropdown"
+            id="base-rate"
             // match current currency selection
             value={ defaultBase } 
             // pass array of currency objects
@@ -116,7 +117,7 @@ export class ExchangeRates extends React.Component {
                   alt={`${currency.label} flag`} 
                   style={{ width: 16, marginRight: 8 }}
                 />
-                <span>{currency.label}</span>
+                <span>{currency.value} ({currency.label})</span>
               </div>
             )}
           /> 
@@ -148,10 +149,10 @@ export class ExchangeRates extends React.Component {
                       <img 
                         src={ currency.image }
                         alt={ `${ currency.label } flag`}
-                        className={`currency-flag currency-flag-${ currency.label }`} 
+                        className="currency-flag"
                         style={{ width: 16, marginRight: 8 }}
                         />
-                        { currency.label }
+                        { currency.value } ({ currency.label} )
                     </td>
                     <td>{ rate }</td>
                   </tr>
