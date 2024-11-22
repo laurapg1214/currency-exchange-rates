@@ -20,13 +20,6 @@ const CurrencyConverterForm = (props) => {
     currencies,
     rates,
     error,
-    handleCurrencySelect,
-    switchFromTo,
-    hideDisplayFormatted,
-    handleAmountChange,
-    handleSubmit,
-    convert,
-    inputRef,
   } = props.state;
 
   // placeholder while rates loading
@@ -79,7 +72,7 @@ const CurrencyConverterForm = (props) => {
               value={ defaultFrom }
               // pass array of currency objects
               options={ currencies }
-              onChange={ (selectedOption) => handleCurrencySelect(selectedOption, 'from') }
+              onChange={ (selectedOption) => props.handleCurrencySelect(selectedOption, 'from') }
               getOptionLabel={(currency) => (
                 <div className="currency-option">
                   {/* use of images with react-select adapted from 
@@ -102,7 +95,7 @@ const CurrencyConverterForm = (props) => {
             <button 
               className="btn btn-success" 
               id="switch-button"
-              onClick={ switchFromTo }
+              onClick={ props.switchFromTo }
             >
               <span>&#8646;</span>
             </button>
@@ -118,7 +111,7 @@ const CurrencyConverterForm = (props) => {
               value={ defaultTo } 
               // pass array of currency objects
               options={ currencies }
-              onChange={ (selectedOption) => handleCurrencySelect(selectedOption, 'to') }
+              onChange={ (selectedOption) => props.handleCurrencySelect(selectedOption, 'to') }
               getOptionLabel={(currency) => (
                 <div className="currency-option">
                   <img 
@@ -160,16 +153,16 @@ const CurrencyConverterForm = (props) => {
               className="amount-field" 
               // toggles between fromFormatted & fromAmount
               value={ displayFormatted ? fromFormatted : fromAmount }
-              onChange={ handleAmountChange }
+              onChange={ props.handleAmountChange }
               // switch to fromAmount on focus
-              onFocus={ hideDisplayFormatted }
+              onFocus={ props.hideDisplayFormatted }
               // attach blur method to input field
-              ref={ inputRef }
+              ref={ props.inputRef }
               // enter key press = convert button press
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
-                  handleSubmit(event);
+                  props.handleSubmit(event);
                 }
               }}
             />
@@ -198,7 +191,7 @@ const CurrencyConverterForm = (props) => {
         <button 
           type="submit" 
           className="btn btn-success"
-          onClick={ handleSubmit }
+          onClick={ props.handleSubmit }
         >
           Convert
         </button>

@@ -223,15 +223,16 @@ export class CurrencyConverter extends React.Component {
     return (
       <div className="currency-converter">
         <CurrencyConverterForm 
-          // passing entire state as single prop
-          state={ this.state }  
-          // passing state methods & ref
+          // pass state variables as single prop
+          state={ this.state }
+          // pass state methods
           handleCurrencySelect={ this.handleCurrencySelect }
           switchFromTo={ this.switchFromTo }
           hideDisplayFormatted={ this.hideDisplayFormatted }
           handleAmountChange={ this.handleAmountChange }
           handleSubmit={ this.handleSubmit }
-          convert={ this.convert }
+          convert={this.convert }
+          // pass ref for input field
           inputRef={ this.inputRef }
         />
       </div>
