@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
-import { generateDefaultFrom } from './Currencies.js';
+import { generateDefaultFrom } from './CurrencyFunctions.js';
 
 const ExchangeRatesForm = (props) => {
   // destructure props from state
@@ -46,11 +46,11 @@ const ExchangeRatesForm = (props) => {
           getOptionLabel={(currency) => (
             <div className="currency-option">
               <img 
-                src={currency.image} 
-                alt={`${currency.label} flag`} 
+                src={ currency.image } 
+                alt={`${ currency.label } flag`} 
                 style={{ width: 16, marginRight: 8 }}
               />
-              <span>{currency.value} ({currency.label})</span>
+              <span>{ currency.value } ({ currency.label })</span>
             </div>
           )}
         /> 

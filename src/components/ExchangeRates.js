@@ -4,7 +4,7 @@ import ExchangeRatesForm from './ExchangeRatesForm.js';
 import { 
   fetchRates,
   fetchCurrencies,
-} from './Currencies.js';
+} from './CurrencyFunctions.js';
 
 // container component (stateful)
 export class ExchangeRates extends React.Component {
