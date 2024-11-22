@@ -5,7 +5,7 @@ A responsive React web app for real-time currency exchange rate tracking and con
 ## Live Demo
 
 Explore the app live on GitHub Pages: <a href="https://laurapg1214.github.io/currency-exchange-rates/" target="_blank">
-  <img src="https://img.shields.io/badge/GitHub-Pages-blue" alt="GitHub Pages">
+  <img src="https://img.shields.io/badge/GitHub-Pages-blue" alt="GitHub Pages">laurapg1214.github.io/currency-exchange-rates
 </a>
 
 ## Features
