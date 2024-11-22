@@ -15,7 +15,7 @@ const App = () => {
     <div>
       {/* NavBar */}
       <NavigationBar />
-      <div className="container mt-5">
+      <div className="container">
         {/* Currency Converter component */}
         <CurrencyConverter />
 

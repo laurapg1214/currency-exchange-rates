@@ -4,7 +4,7 @@ const NavigationBar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <h3>LPG Currency Exchange Rates</h3>
+        <h5>LPG Currency Exchange Rates</h5>
       </div>
     </nav>
   );
