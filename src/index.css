@@ -136,6 +136,44 @@ h3, h5 {
   margin-top: 10px;
 }
 
+/* footer styling */
+.footer {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.footer-content p {
+  text-align: center;
+  margin: 0;
+}
+
+#footer-license-link,
+#footer-gh-link {
+  color: white;
+  margin-left: 5px;
+  text-decoration: none;
+}
+
+#footer-license-link:hover,
+#footer-gh-link:hover {
+  color: #ffcc00;
+  text-decoration: underline;
+}
+
+#footer-gh-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+#footer-gh-link i {
+  margin-right: 8px;
+}
+
 /* styling for error messages */
 .text-danger {
   font-weight: 500;
