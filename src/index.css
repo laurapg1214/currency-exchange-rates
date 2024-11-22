@@ -99,6 +99,12 @@ code {
   margin-top: 5px;
 }
 
+@media (max-width: 850px) {
+  #exchange-rates-container {
+    width: 500px;
+  }
+}
+
 /* header styling for titles of components */
 h3, h5 {
   font-weight: 600;
@@ -108,17 +114,18 @@ h3, h5 {
 /* currency converter elements */
 .currency-converter-row {
   display: flex;
+  align-items: flex-start;
   justify-content: center;
 }
 
 .col-4 {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end; /* push content to bottom */
 }
 
 .label {
   text-align: center;
-  align-self: flex-end; /* push to bottom */
   width: 100%;
 }
 
