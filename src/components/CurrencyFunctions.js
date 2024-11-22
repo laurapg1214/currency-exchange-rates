@@ -4,11 +4,11 @@ import { json, checkStatus } from '../utils.js';
 const getFlagPath = (code) => {
   // fallback image to handle no flag image
   if (code === 'ISK') {
-    return '/currency-exchange-rates/flags/icons8-flag-24.png';
+    return `${process.env.PUBLIC_URL}/flags/icons8-flag-24.png`;
   }
   /* dynamic path to flag images
   (from https://www.npmjs.com/package/currency-flags) */
-  return `/currency-exchange-rates/flags/square-flags/${code.toLowerCase()}.svg`;
+  return `${process.env.PUBLIC_URL}/flags/square-flags/${code.toLowerCase()}.svg`;
 }
 
 export const fetchCurrencies = () => {
