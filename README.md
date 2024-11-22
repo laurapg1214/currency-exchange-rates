@@ -2,7 +2,7 @@
 
 A responsive React web app for real-time currency exchange rate tracking and conversion. Uses Frankfurter APIs to fetch and display exchange rates. Allows users to select and convert currencies, and view up-to-date exchange rates. Built for Altcademy Full Stack bootcamp.
 
-[View the live site here:](https://laurapg1214.github.io/currency-exchange-rates/)
+[View the live site here: laurapg1214.github.io/currency-exchange-rates](https://laurapg1214.github.io/currency-exchange-rates/)
 
 ## Features
 
