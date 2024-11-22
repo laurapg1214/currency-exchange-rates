@@ -101,10 +101,9 @@ export class ExchangeRates extends React.Component {
 
         {/* base currency select dropdown */}
         <div>
-          <label htmlFor="base-rate">Base Currency</label>
+          <label id="base-currency-label" htmlFor="base-currency-dropdown">Base Currency</label>
           <Select
-            className="base-rate-dropdown"
-            id="base-rate"
+            id="base-currency-dropdown"
             // match current currency selection
             value={ defaultBase } 
             // pass array of currency objects

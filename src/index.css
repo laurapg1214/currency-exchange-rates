@@ -18,7 +18,7 @@ code {
   justify-content: space-between;
   align-items: center;
   background-color: #444;
-  padding: 10px;
+  padding: 10px 0px 10px 20px;
 }
 
 .navbar-brand h5 {
@@ -179,8 +179,13 @@ h3, h5 {
   color: #444;
 }
 
-.base-rate-dropdown {
-  margin-top: 10px;
+#base-currency-label {
+  margin-left: 5px;
+}
+
+#base-currency-dropdown {
+  margin-top: 5px;
+  width: 300px;
 }
 
 /* styling for error messages */
