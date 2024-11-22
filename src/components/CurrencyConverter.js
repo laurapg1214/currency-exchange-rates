@@ -221,7 +221,7 @@ export class CurrencyConverter extends React.Component {
   
   render() {
     return (
-      <div className="currency-converter">
+      <div className="currency-converter-form">
         <CurrencyConverterForm 
           // pass state variables as single prop
           state={ this.state }
@@ -239,5 +239,3 @@ export class CurrencyConverter extends React.Component {
     )
   }
 }
-
-export default CurrencyConverter;
