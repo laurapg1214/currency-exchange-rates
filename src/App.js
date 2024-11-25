@@ -25,9 +25,9 @@ const App = () => {
         {/* Main Content */}
         <main>
           <Switch>
-            <Route path="/" exact component={ ExchangeRates } />
-            <Route path="/converter" component={ CurrencyConverter } />
-            <Route path="*" component={ NotFound } />
+            <Route path="/" exact component={ExchangeRates} />
+            <Route path="/converter" component={CurrencyConverter} />
+            <Route path="*" component={NotFound} />
           </Switch>
         </main>
         {/* Footer */}
