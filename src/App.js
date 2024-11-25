@@ -27,7 +27,7 @@ const App = () => {
           <Switch>
             <Route path="/" exact component={ExchangeRates} />
             <Route path="/converter" component={CurrencyConverter} />
-            <Route path="*" component={NotFound} />
+            <Route component={NotFound} />
           </Switch>
         </main>
         {/* Footer */}
