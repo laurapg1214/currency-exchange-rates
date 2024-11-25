@@ -4,7 +4,7 @@ import CurrencyConverterForm from './CurrencyConverterForm.js';
 import { 
   fetchRates,
   fetchCurrencies, 
-} from './CurrencyFunctions.js';
+} from '../utils/currencyUtils.js';
 
 // container component 
 export class CurrencyConverter extends React.Component {

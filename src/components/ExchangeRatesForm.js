@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
-import { generateDefaultFrom } from './CurrencyFunctions.js';
+import { generateDefaultFrom } from '../utils/currencyUtils.js';
 
 const ExchangeRatesForm = (props) => {
   // destructure props from state

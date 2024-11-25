@@ -1,10 +1,11 @@
 import React from 'react';
+import Chart from 'chart.js/auto';
 import { format } from 'date-fns';
 import ExchangeRatesForm from './ExchangeRatesForm.js';
 import { 
   fetchRates,
   fetchCurrencies,
-} from './CurrencyFunctions.js';
+} from '../utils/currencyUtils.js';
 
 // container component (stateful)
 export class ExchangeRates extends React.Component {

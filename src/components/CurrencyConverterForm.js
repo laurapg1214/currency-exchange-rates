@@ -3,7 +3,7 @@ import Select from 'react-select';
 import { 
   generateDefaultFrom, 
   generateDefaultTo, 
-} from './CurrencyFunctions.js';
+} from '../utils/currencyUtils.js';
 
 const CurrencyConverterForm = (props) => {
   // destructure props from state

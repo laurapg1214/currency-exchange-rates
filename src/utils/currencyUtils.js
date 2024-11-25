@@ -1,4 +1,7 @@
-import { json, checkStatus } from '../utils.js';
+import { 
+  checkStatus,
+  json,
+} from './fetchUtils.js';
 
 // generate flag image path
 const getFlagPath = (code) => {
@@ -10,25 +13,25 @@ const getFlagPath = (code) => {
   (from https://www.npmjs.com/package/currency-flags) */
   return `${process.env.PUBLIC_URL}/flags/square-flags/${code.toLowerCase()}.svg`;
 }
-
+  
 export const fetchCurrencies = () => {
 // generate array of all currencies
   return fetch('https://api.frankfurter.app/currencies')
     .then(checkStatus)
     .then(json)
     .then((data) => {
-      // create array of currencies with flag images
+    // create array of currencies with flag images
       return Object.entries(data).map(([currencyCode, currencyName]) => {
         return {
-          value: currencyName,
-          label: currencyCode,
-          image: getFlagPath(currencyCode) // assign flag path var to handle no flag image
+        value: currencyName,
+        label: currencyCode,
+        image: getFlagPath(currencyCode) // assign flag path var to handle no flag image
         };
       });
     })
     .catch((error) => {
-      // return rejected promise for catch block handling in components
-      return Promise.reject(error);
+    // return rejected promise for catch block handling in components
+    return Promise.reject(error);
     })
 }
 
@@ -38,20 +41,19 @@ export const fetchRates = (base) => {
     .then(checkStatus)
     .then(json)
     .then((data) => {
-      // return rates object for updating rates state in components
+    // return rates object for updating rates state in components
       return data.rates;
-      }
-    )
+    })
     // error handling
     .catch((error) => {
-      // return rejected promise for catch block handling in components
+    // return rejected promise for catch block handling in components
       return Promise.reject(error);
     });
 }
 
 // generate base object for default base currency in dropdown
 export const generateDefaultFrom = (from, currencies) => {
-  // error handling
+// error handling
   if (!from || !currencies) {
     return;
   }
