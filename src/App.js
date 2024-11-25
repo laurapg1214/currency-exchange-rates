@@ -17,7 +17,7 @@ const NotFound = () => {
 
 const App = () => {
   return (
-    <Router>
+    <Router basename="/currency-exchange-rates">
       <div className="container">
         {/* Navigation Bar */}
         <NavigationBar />
