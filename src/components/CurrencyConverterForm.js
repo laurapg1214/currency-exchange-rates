@@ -19,6 +19,7 @@ const CurrencyConverterForm = (props) => {
     equalSign,
     currencies,
     rates,
+    showChart,
     error,
   } = props.state;
 
@@ -36,10 +37,10 @@ const CurrencyConverterForm = (props) => {
     )
   };
 
-  // generate default base object
+  // generate default base currency object
   const defaultFrom = generateDefaultFrom(from, currencies);
 
-  // generate default target object
+  // generate default quote currency object
   const defaultTo = generateDefaultTo(to);
 
   // return Currency Converter table
@@ -103,7 +104,7 @@ const CurrencyConverterForm = (props) => {
         </div>
         <div className="col-4">
           <div className="dropdown">
-            {/* target currency dropdown */}
+            {/* quote currency dropdown */}
             <Select
               // associate component with label htmlFor
               id="to-currency"
@@ -172,7 +173,7 @@ const CurrencyConverterForm = (props) => {
           <h4>{ equalSign }</h4>
         </div>
         <div className="col-4">
-          {/* target amount (converted) */}
+          {/* quote currency amount (converted) */}
           <div>
             <input 
               type="text" 
@@ -195,6 +196,9 @@ const CurrencyConverterForm = (props) => {
         >
           Convert
         </button>
+      </div>
+      <div>
+        {showChart && <canvas ref={ props.chartRef } />}
       </div>
     </div>
   )

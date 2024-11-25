@@ -4,7 +4,7 @@ import {
 } from './fetchUtils.js';
 
 // generate flag image path
-const getFlagPath = (code) => {
+const generateFlagPath = (code) => {
   // fallback image to handle no flag image
   if (code === 'ISK') {
     return `${process.env.PUBLIC_URL}/flags/icons8-flag-24.png`;
@@ -14,7 +14,7 @@ const getFlagPath = (code) => {
   return `${process.env.PUBLIC_URL}/flags/square-flags/${code.toLowerCase()}.svg`;
 }
   
-export const fetchCurrencies = () => {
+export const getCurrencies = () => {
 // generate array of all currencies
   return fetch('https://api.frankfurter.app/currencies')
     .then(checkStatus)
@@ -25,7 +25,7 @@ export const fetchCurrencies = () => {
         return {
         value: currencyName,
         label: currencyCode,
-        image: getFlagPath(currencyCode) // assign flag path var to handle no flag image
+        image: generateFlagPath(currencyCode) // assign flag path var to handle no flag image
         };
       });
     })
@@ -36,7 +36,7 @@ export const fetchCurrencies = () => {
 }
 
 // fetch rates with current base
-export const fetchRates = (base) => {
+export const getRates = (base) => {
   return fetch(`https://api.frankfurter.app/latest?base=${base}`)
     .then(checkStatus)
     .then(json)
@@ -65,11 +65,11 @@ export const generateDefaultFrom = (from, currencies) => {
   return {
     value: currencyName ? currencyName.value : '',
     label: from,
-    image: getFlagPath(from)
+    image: generateFlagPath(from)
   };
 }
 
-// generate target object for default target currency in dropdown
+// generate quote currency object for default quote currency in dropdown
 export const generateDefaultTo = (to) => {
   if (!to) {
     return;
@@ -77,6 +77,6 @@ export const generateDefaultTo = (to) => {
   return {
     value: to.toLowerCase(),
     label: to,
-    image: getFlagPath(to)
+    image: generateFlagPath(to)
   };
 }

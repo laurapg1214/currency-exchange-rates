@@ -1,10 +1,15 @@
 import React from 'react';
+import Chart from 'chart.js/auto';
 import currencyToLocale from 'currency-to-locale'; // my package on npm
 import CurrencyConverterForm from './CurrencyConverterForm.js';
 import { 
-  fetchRates,
-  fetchCurrencies, 
+  getRates,
+  getCurrencies, 
 } from '../utils/currencyUtils.js';
+import {
+  checkStatus,
+  json,
+} from '../utils/fetchUtils.js';
 
 // container component 
 export class CurrencyConverter extends React.Component {
@@ -24,8 +29,16 @@ export class CurrencyConverter extends React.Component {
       equalSign: '', // empty until convert button clicked
       currencies: null,
       rates: null,
+      chart: null,
+      showChart: false,
       error: '',
     };
+
+    // ref for input field for control of focus & blurring
+    this.inputRef = React.createRef();
+    
+    // ref for currency chart
+    this.chartRef = React.createRef();
 
     // bind methods
     this.handleCurrencySelect = this.handleCurrencySelect.bind(this);
@@ -33,34 +46,34 @@ export class CurrencyConverter extends React.Component {
     this.hideDisplayFormatted = this.hideDisplayFormatted.bind(this);
     this.handleAmountChange = this.handleAmountChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.getHistoricalRates = this.getHistoricalRates.bind(this);
+    this.buildChart = this.buildChart.bind(this);
     this.convert = this.convert.bind(this);
-
-    // ref for input field for control of focus & blurring
-    this.inputRef = React.createRef();
   }
 
-  // handler for base/target currency selected from dropdowns
+  // handler for base/quote currency selected from dropdowns
   handleCurrencySelect(selectedOption, type) {
     const isFrom = type === 'from';
 
-    // update base/target currency from selection
+    // update base/quote currency from selection
     this.setState({ 
       [type]: selectedOption.label,
-      // reset from label & values
+      // reset from/to label & values
       [`${ type }Label`]: selectedOption.value,
       fromFormatted: '',
       toFormatted: '',
       displayFormatted: false,
+      showChart: false,
     }, () => {
       // callback - if base (from) updated, fetch rates
       if (isFrom) {
-        fetchRates(this.state.from)
+        getRates(this.state.from);
       }   
     });
   }
   
   // handler for switch button click
-  switchFromTo(event) {
+  switchFromTo() {
     // create tmp variables
     const fromTmp = this.state.from;
     const fromAmountTmp = this.state.fromAmount;
@@ -70,18 +83,23 @@ export class CurrencyConverter extends React.Component {
     this.setState({
       from: this.state.to,
       to: fromTmp,
-    })
-
-    if (!this.state.switchCurrenciesOnly) {
-      this.setState({
-        fromAmount: this.state.toAmount,
-        toAmount: fromAmountTmp,
-        fromFormatted: this.state.toFormatted,
-        toFormatted: fromFormattedTmp,
-        fromLabel: this.state.toLabel,
-        toLabel: fromLabelTmp,
-      });
-    };
+    }, () => {
+      // callback to ensure from and to states updated
+      if (!this.state.switchCurrenciesOnly) {
+        this.setState({
+          fromAmount: this.state.toAmount,
+          toAmount: fromAmountTmp,
+          fromFormatted: this.state.toFormatted,
+          toFormatted: fromFormattedTmp,
+          fromLabel: this.state.toLabel,
+          toLabel: fromLabelTmp,
+        });
+      }
+  
+      // rebuild chart after switch
+      this.getHistoricalRates(this.state.from, this.state.to);
+      console.log("Switch From:", this.state.from, "Switch To:", this.state.to);
+    });
   }
 
   // handler for focus on from amount input field
@@ -115,6 +133,66 @@ export class CurrencyConverter extends React.Component {
     // run conversion
     let { from, to, fromAmount } = this.state;
     this.convert(from, to, fromAmount);
+  }
+
+  // fetch historical data for charts
+  getHistoricalRates = (from, to) => {
+    console.log("From:", from, "To:", to);
+    // generate date/time string, split & keep date
+    const endDate = new Date().toISOString().split('T')[0];
+    // generate same, minus 30 days (in day/hr/min/sec/millisec)
+    const startDate = new Date((new Date).getTime() - (30 * 24 * 60 * 60 * 1000))
+      .toISOString().split('T')[0];
+
+    // api call for chart data
+    fetch(
+      `https://api.frankfurter.app/${ startDate }..${ endDate }?from=${ from }&to=${ to }`
+    )
+      .then(checkStatus)
+      .then(json)
+      .then(data => {
+        // error checking
+        if(data.error) {
+          throw new Error(data.error);
+        }
+
+        // create chart arrays
+        const chartLabels = Object.keys(data.rates);
+        const chartData = Object.values(data.rates).map(rate => rate[to]);
+        const chartLabel = `${ from }/${ to }`;
+
+        // run buildChart
+        this.buildChart(chartLabels, chartData, chartLabel);
+      })
+      .catch(error => console.error(error.message));
+  }
+
+  buildChart = (labels, data, label) => {
+    const chartRef = this.chartRef.current.getContext("2d");
+
+    // destroy existing chart if exists
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    // create new chart
+    this.chart = new Chart(chartRef, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: label,
+            data,
+            fill: false,
+            tension: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+      }
+    })
   }
 
   // conversion function
@@ -166,9 +244,14 @@ export class CurrencyConverter extends React.Component {
           switchCurrenciesOnly: false,
           // show equal sign on first convert
           equalSign: '=',
+          // show chart
+          showChart: true,
           // reset error if successful
           error: '',
         });
+
+        // rebuild chart after conversion
+        this.getHistoricalRates(this.state.from, this.state.to);
       })
       // error handling
       .catch((error) => {
@@ -180,6 +263,7 @@ export class CurrencyConverter extends React.Component {
 
   componentDidMount() {
     const { from } = this.state;
+    const { to } = this.state;
 
     // focus input field to allow onKeyDown listener,
     // with slight delay to give element time to render
@@ -190,7 +274,7 @@ export class CurrencyConverter extends React.Component {
     }, 100);
 
     // fetch full list of currencies and flags
-    fetchCurrencies()
+    getCurrencies()
       .then((currencies) => {
         this.setState({
           currencies,
@@ -203,7 +287,7 @@ export class CurrencyConverter extends React.Component {
       });
 
     // fetch rates using current base (from)
-    fetchRates(from)
+    getRates(from)
       .then((rates) => {
         this.setState ({
           rates,
@@ -216,7 +300,7 @@ export class CurrencyConverter extends React.Component {
           rates: null,
           error: error.message || error,
         })
-      })
+      });
   }
   
   render() {
@@ -232,8 +316,9 @@ export class CurrencyConverter extends React.Component {
           handleAmountChange={ this.handleAmountChange }
           handleSubmit={ this.handleSubmit }
           convert={this.convert }
-          // pass ref for input field
+          // pass refs 
           inputRef={ this.inputRef }
+          chartRef={ this.chartRef }
         />
       </div>
     )

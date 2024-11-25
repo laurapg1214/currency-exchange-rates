@@ -1,10 +1,9 @@
 import React from 'react';
-import Chart from 'chart.js/auto';
 import { format } from 'date-fns';
 import ExchangeRatesForm from './ExchangeRatesForm.js';
 import { 
-  fetchRates,
-  fetchCurrencies,
+  getRates,
+  getCurrencies,
 } from '../utils/currencyUtils.js';
 
 // container component (stateful)
@@ -20,18 +19,17 @@ export class ExchangeRates extends React.Component {
       error: '',
     };
 
+    // bind methods
     this.handleBaseRateSelect = this.handleBaseRateSelect.bind(this);
   }
 
-  // listener for base rate selection
-  // selectedOption passed in instead of event bc using React Select
-
-  // TODO: make rates refresh
+  /* listener for base rate selection
+     selectedOption passed in instead of event bc using React Select */
   handleBaseRateSelect(selectedOption) {
     // update base currency & baseURL from selection
     this.setState({ base: selectedOption.label }, () => {
-      // fetchRates passed as callback function after base state update
-      fetchRates(this.state.base)
+      // getRates passed as callback function after base state update
+      getRates(this.state.base)
         .then((newRates) => {
           this.setState({ rates: newRates });
         });
@@ -40,7 +38,7 @@ export class ExchangeRates extends React.Component {
 
   componentDidMount() {
     // fetch full list of currencies and flags
-    fetchCurrencies()
+    getCurrencies()
       .then((currencies) => {
         this.setState({
           currencies,
@@ -53,7 +51,7 @@ export class ExchangeRates extends React.Component {
       });
 
     // fetch rates using current base (from)
-    fetchRates(this.state.base)
+    getRates(this.state.base)
       .then((rates) => {
         this.setState ({
           rates,
