@@ -17,7 +17,7 @@ code {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #444;
+  background-color: #354c35;
   padding: 10px 0px 10px 20px;
 }
 
@@ -44,7 +44,7 @@ code {
 
 /* footer styling */
 .footer {
-  background-color: #444;
+  background-color: #354c35;
   color: white;
   padding: 10px;
   text-align: center;
