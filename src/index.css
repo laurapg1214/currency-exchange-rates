@@ -21,9 +21,25 @@ code {
   padding: 10px 0px 10px 20px;
 }
 
-.navbar-brand h5 {
+.navbar-brand h3 {
   color: white;
   margin: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: #ffcc00;
+  text-decoration: underline;
 }
 
 /* footer styling */
@@ -41,27 +57,30 @@ code {
 }
 
 #footer-license-link,
-#footer-gh-link {
+#footer-social-link {
   color: white;
   margin-left: 5px;
   text-decoration: none;
 }
 
 #footer-license-link:hover,
-#footer-gh-link:hover {
+#footer-social-link:hover {
   color: #ffcc00;
   text-decoration: underline;
 }
 
-#footer-gh-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
+#footer-social-link i {
+  margin-right: 8px;
 }
 
-#footer-gh-link i {
-  margin-right: 8px;
+.footer-content .row {
+  display: flex;
+  gap: 10px; 
+  margin-top: 10px;
+}
+
+.footer-content .row span {
+  margin: 0 5px;
 }
 
 /* main container */

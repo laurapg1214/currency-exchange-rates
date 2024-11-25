@@ -98,7 +98,6 @@ export class CurrencyConverter extends React.Component {
   
       // rebuild chart after switch
       this.getHistoricalRates(this.state.from, this.state.to);
-      console.log("Switch From:", this.state.from, "Switch To:", this.state.to);
     });
   }
 
@@ -137,7 +136,6 @@ export class CurrencyConverter extends React.Component {
 
   // fetch historical data for charts
   getHistoricalRates = (from, to) => {
-    console.log("From:", from, "To:", to);
     // generate date/time string, split & keep date
     const endDate = new Date().toISOString().split('T')[0];
     // generate same, minus 30 days (in day/hr/min/sec/millisec)

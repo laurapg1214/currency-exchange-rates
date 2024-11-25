@@ -1,4 +1,9 @@
 import React from 'react';
+import { 
+  BrowserRouter as Router, 
+  Route, 
+  Switch
+} from "react-router-dom";
 import NavigationBar from './components/NavigationBar.js';
 import Footer from './components/Footer.js';
 import { CurrencyConverter } from './components/CurrencyConverter.js';
@@ -12,23 +17,23 @@ const NotFound = () => {
 
 const App = () => {
   return (
-    <div>
-      {/* NavBar */}
-      <NavigationBar />
+    <Router>
       <div className="container">
-        {/* Currency Converter component */}
-        <CurrencyConverter />
+        {/* Navigation Bar */}
+        <NavigationBar />
 
-        {/* spacer */}
-        <hr /> 
-
-        {/* Exchange Rates component */}
-        <ExchangeRates />
-
+        {/* Main Content */}
+        <main>
+          <Switch>
+            <Route path="/" exact component={ ExchangeRates } />
+            <Route path="/converter" component={ CurrencyConverter } />
+            <Route path="*" component={ NotFound } />
+          </Switch>
+        </main>
+        {/* Footer */}
+        <Footer />
       </div>
-      {/* Footer */}
-      <Footer />
-    </div>
+    </Router>
   );
 }
 
